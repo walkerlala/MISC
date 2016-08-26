@@ -1,11 +1,11 @@
-                SQL Injection: attacks and defenses
-                ===================================
+SQL Injection: attacks and defenses
+===================================
 
 ABSTRACT
 ---------
-With its first appearance in 1998![ref-1][1]![ref-2][2], have attract so much
-attention in database sciense and various other field, especially WEB
-applications industry. It's a code injection technique used to attack
+Since its first appearance in 1998![ref-1][1]![ref-2][2], SQL injection have 
+attract so much attention in database sciense and various other field, especially
+WEB applications industry. It's a code injection technique used to attack
 data-driven application. By using SQL injection, attackers can spoof identity,
 tamper with existing data, cause repudiation issues such as voiding transactions
 or changing balances, and even become administrators of the database server. So
