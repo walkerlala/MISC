@@ -23,8 +23,10 @@ What is SQL-Injection ?
 SQL injection happen when programmers want to add user input dynamically into
 the SQL statement they construct. When a sql statement is construct dynamically,
 using external input, attacker can easily form a malicious input to alter the
-behaviour of the original SQL statement, causing security problem. For example,
-below is program in php that can easily be SQL-injected:
+behaviour of the original SQL statement, causing security problem. Here we will
+make a classification of SQL injection attacks![ref-3][1]:
+
+#### Injected Additional Query
 
     ```php
     $query         = "SELECT * FROM users where id=$expected_data";
@@ -45,21 +47,22 @@ produce a malicious query:
 which would unexpectly delete table "users".
 This is one of the canonical examples of SQL-injection, and it can be avoided by
 disallowing multiple queries to be execute at the same time.
-However, in some other examples, disallowing multiple queries does not work:
+
+####  Bypass Authentication
 Here is a commonly routine (wrong) snippet in php for user authentication:
 
     ```php
     $username = $_POST['username'];
-	$password = $_POST['password'];
+    $password = $_POST['password'];
     $sql = "SELECT uid,username FROM user WHERE username='{$username}' AND password='{$password}'";
     ```
 
 while we can disallow more than one SQL injection to be executed at a time, a
-hacket can easily come up with something like this:
+attacker can easily come up with something like this:
 
     ```php
     $username = "foo' AND 1=1 --"
-	$password = "whatever-password"
+    $password = "whatever-password"
     ```
 
 which would generate a malicious SQL query like this:
@@ -75,7 +78,26 @@ string for password and gain access to a user's account information. This can
 be prevented by validate data type of input data or using Prepared 
 Statement(see below).
 
-Another kind of attack is called **Bind SQL Injection**. By using blind SQL
+#### Unathorized Remote Execution of Procedure![ref-4][4]
+Attack of this kind perform a task and execute some procedure that are not 
+authorized. Imagine a web application wrritten like this:
+
+    ```php
+    $username = $_POST['username'];
+    $password = $_POST['password'];
+    $sql = "SELECT uid,username FROM user WHERE username='{$username}' AND password='{$password}'";
+    ```
+Then, with a input of `alex";SHUTDOWN;` for `$username` and `wrong_pass` for `$password`,
+a malicious injected query would be generated as:
+
+    ```SQL
+    SELECT salary_info FROM employerr WHERE username="alex";SHUTDOWN;and password="";
+    ```
+    
+This would shutdown the DBMS unexpectedly.
+
+#### Blind SQL injectioin
+By using blind SQL
 injection, attacker can no longer see the result of the query, but, however,
 he/she can guess by the output of applications(e.g. error messages) to figure
 out how internally is the query carried out and even the structure of the
@@ -102,6 +124,19 @@ if the first one success and the second fail with no error message alerting
 about invalid input, then we can determine that the second one can pass the
 validation check(though the result is wrong) and know that this site is 
 vulnerable to SQL injection attack. This is call Blind SQL Injection.
+
+#### Injected Union Query
+In this type of attack, the intruder injects a query which contains set operators.
+A injected union SQL would be generated as:
+
+    ```SQL
+    SELECT salary FROM employee WHERE username=’’ and password=’’
+    UNION SELECT salary FROM employee where emp_id=’10125’;
+    ```
+
+The first part generate a null value. However, it allow intruder to access info of
+the user having id 10125.
+
 
 
 Defense against SQL injection
