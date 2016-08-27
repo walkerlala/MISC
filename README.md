@@ -3,14 +3,14 @@ SQL Injection: attacks and defenses
 
 ABSTRACT
 ---------
-Since its first appearance in 1998![ref-1][1]![ref-2][2], SQL injection have 
+Since its first appearance in 1998, SQL injection have 
 attract so much attention in database sciense and various other field, especially
 WEB applications industry. It's a code injection technique used to attack
 data-driven application. By using SQL injection, attackers can spoof identity,
 tamper with existing data, cause repudiation issues such as voiding transactions
 or changing balances, and even become administrators of the database server. So
 far, plenty of techniques and "common practices" have been developed to tackle
-this problem![ref-3][3]. This paper try to serve as a survey to discuss various
+this problem[1]. This paper try to serve as a survey to discuss various
 of topics about SQL injection, such as how it can be carried out, what it looks
 like, and how to protect application from it. We first describe various of forms
 of SQL injection by giving a few examples, and along the way we present some
@@ -24,7 +24,7 @@ SQL injection happen when programmers want to add user input dynamically into
 the SQL statement they construct. When a sql statement is construct dynamically,
 using external input, attacker can easily form a malicious input to alter the
 behaviour of the original SQL statement, causing security problem. Here we will
-make a classification of SQL injection attacks![ref-3][1]:
+make a classification of SQL injection attacks[2]:
 
 #### Injected Additional Query
 
@@ -317,6 +317,10 @@ Conclusion
 
 TODO: real world SQL-injection example
 
-[1]: http://www.esecurityplanet.com/network-security/how-was-sql-injection-discovered.html
-[2]: http://phrack.org/issues/54/8.html#article
-[3]: 2015 Web Application Attack Report (WAAR)
+
+
+
+[1]: 2015 Web Application Attack Report (WAAR)
+[2]: SQL Injection Attacks: Technique and Prevention Mechanism, Gaurav Shrivastava, Kshitij Pathak
+
+
