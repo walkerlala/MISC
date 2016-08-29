@@ -1,326 +1,39 @@
-SQL Injection: attacks and defenses
-===================================
+一个分布式爬虫的设计与实现
+===========================
 
-ABSTRACT
----------
-Since its first appearance in 1998, SQL injection have 
-attract so much attention in database sciense and various other field, especially
-WEB applications industry. It's a code injection technique used to attack
-data-driven application. By using SQL injection, attackers can spoof identity,
-tamper with existing data, cause repudiation issues such as voiding transactions
-or changing balances, and even become administrators of the database server. So
-far, plenty of techniques and "common practices" have been developed to tackle
-this problem[1]. This paper try to serve as a survey to discuss various
-of topics about SQL injection, such as how it can be carried out, what it looks
-like, and how to protect application from it. We first describe various of forms
-of SQL injection by giving a few examples, and along the way we present some
-popular techniques used to prevent it. Then we concludes all the materials we
-have presented so far.
-
-
-What is SQL-Injection ?
-------------------------
-SQL injection happen when programmers want to add user input dynamically into
-the SQL statement they construct. When a sql statement is construct dynamically,
-using external input, attacker can easily form a malicious input to alter the
-behaviour of the original SQL statement, causing security problem. Here we will
-make a classification of SQL injection attacks[2]:
-
-#### Injected Additional Query
-
-    ```php
-    $query         = "SELECT * FROM users where id=$expected_data";
-    ```
-with a normal input like `$expected_data = 1;`, it would produce a harmless SQL
-query:
-    
-    ```SQL
-    SELECT * FROM users where id=1
-    ```
-
-However, unregular statement like `$expected_data = "1; DROP TABLE users;` would
-produce a malicious query:
-
-    ```SQL
-    SELECT * FROM users where id=1; DROP TABLE users;
-    ```
-which would unexpectly delete table "users".
-This is one of the canonical examples of SQL-injection, and it can be avoided by
-disallowing multiple queries to be execute at the same time.
-
-####  Bypass Authentication
-Here is a commonly routine (wrong) snippet in php for user authentication:
-
-    ```php
-    $username = $_POST['username'];
-    $password = $_POST['password'];
-    $sql = "SELECT uid,username FROM user WHERE username='{$username}' AND password='{$password}'";
-    ```
-
-while we can disallow more than one SQL injection to be executed at a time, a
-attacker can easily come up with something like this:
-
-    ```php
-    $username = "foo' AND 1=1 --"
-    $password = "whatever-password"
-    ```
-
-which would generate a malicious SQL query like this:
-
-    ```SQL
-    SELECT uid,username FROM user WHERE username='foo' AND 1=1--' AND password='whatever-password'
-    ```
-
-(note that -- is used for comments in SQL).
-This is unexpected even we disallow multi-query in one statement, and enforce
-input to match the single quote. With that, a malicous user can use any random
-string for password and gain access to a user's account information. This can
-be prevented by validate data type of input data or using Prepared 
-Statement(see below).
-
-#### Unathorized Remote Execution of Procedure![ref-4][4]
-Attack of this kind perform a task and execute some procedure that are not 
-authorized. Imagine a web application wrritten like this:
-
-    ```php
-    $username = $_POST['username'];
-    $password = $_POST['password'];
-    $sql = "SELECT uid,username FROM user WHERE username='{$username}' AND password='{$password}'";
-    ```
-Then, with a input of `alex";SHUTDOWN;` for `$username` and `wrong_pass` for `$password`,
-a malicious injected query would be generated as:
-
-    ```SQL
-    SELECT salary_info FROM employerr WHERE username="alex";SHUTDOWN;and password="";
-    ```
-    
-This would shutdown the DBMS unexpectedly.
-
-#### Blind SQL injectioin
-By using blind SQL
-injection, attacker can no longer see the result of the query, but, however,
-he/she can guess by the output of applications(e.g. error messages) to figure
-out how internally is the query carried out and even the structure of the
-database. For example, it common for web application to use this kind of URL
-to query database:
-
-    http://books.example.com/showReview.php?ID=5
-
-and then corresponding SQL generated would be something like this:
-
-    SELECT * FROM bookreviews WHERE ID = 5;
-
-Upon seeing this kind of URL, an attacker will try to enter some URL like these:
-
-    http://books.example.com/showReview.php?ID=5 OR 1=1
-    http://books.example.com/showReview.php?ID=5 AND 1=2
-
-and the corresponding SQL generated would be:
-
-    SELECT * FROM bookreviews WHERE ID = '5' OR '1'='1';
-    SELECT * FROM bookreviews WHERE ID = '5' AND '1'='2';
-
-if the first one success and the second fail with no error message alerting
-about invalid input, then we can determine that the second one can pass the
-validation check(though the result is wrong) and know that this site is 
-vulnerable to SQL injection attack. This is call Blind SQL Injection.
-
-#### Injected Union Query
-In this type of attack, the intruder injects a query which contains set operators.
-A injected union SQL would be generated as:
-
-    ```SQL
-    SELECT salary FROM employee WHERE username=’’ and password=’’
-    UNION SELECT salary FROM employee where emp_id=’10125’;
-    ```
-
-The first part generate a null value. However, it allow intruder to access info of
-the user having id 10125.
-
-
-
-Defense against SQL injection
-------------------------------
-
-Various of techniques have been developed to protect application against SQL
-injections:
-    1. Escaping special characters
-    2. Data-validate all external input
-    3. Prepared Statements(Parameterized Queries)
-    4. White List Input Validation
-    5. Stored Procedures
-    6. Database Permission Check
-
-#### Escaping special characters
-The manual for an SQL DBMS explains which characters have a special meaning,
-which allows creating a comprehensive "blacklist" of characters that need
-translation. For instance, every occurrence of a single quote (') in a parameter
-must be replaced by two single quotes ('') to form a valid SQL string literal.
-For example, in PHP it is usual to escape parameters using the function
-"mysqli_real_escape_string()" before sending the SQL query:
-
-```
-$mysqli = new mysqli('hostname', 'db_username', 'db_password', 'db_name');
-$query = sprintf("SELECT * FROM `Users` WHERE UserName='%s' AND Password='%s'",
-                  $mysqli->real_escape_string($username),
-                  $mysqli->real_escape_string($password));
-$mysqli->query($query);
-```
-
-This is a straightforward way but may be error-prone sometimes because it
-usually impossible for someone to remember all those special characters and it
-is easy to forget to escape a given string in applications.
-
-#### Data-validate all external input
-
-   (blah blah blah...)
-
-
-
-#### Prepared Statement
-This is propably the most prevelant method against SQL injection and thus
-deserved a more detailed discussion.
-
-Essentially, the root of SQL injection is **mixing code and data**.
-A SQL statement is a legitimate 'program'. It is, like other program, be parsed
-and executed by the SQL server. When we are dynamically construct SQL statement,
-however, we are mixing code and data. Once data become part of the program, they
-can alter the behavior of our program, causing unexpected result. So,
-intuitively, all we have to do is seperate _code_ and _data_. That is where this
-common technique called **Prepared statement** come to help.
-
-A prepared statement is also called parameterized statement. It takes the form
-of a SQL template, into which certain placeholder can be substituted substitued
-during each execution. It offer many advantages:
-
-    * Execution speed-up. Because Prepared Statement is essentially a template,
-    it can be compiled once and used many time afterward without repeated
-    compilation, thus can speed up program execution.
-    
-    * Avoid SQL injection. When using Prepared Statement, one can send SQL-code
-    and SQL-data seperately to SQL server, so that it is compiled seperately and
-    cannot be mixed. With this, we can garauntee that external data will not
-    alter the behaviour of our program.
-
-Example of Prepared Statement in php:
-
-    ```php
-    $username = isset($_GET['username']) ? $_GET['username'] : '';
-    $sql = "SELECT uid,username FROM user WHERE username=?";
-	$stmt = $mysqli->prepare($sql);
-	$stmt->bind_param("s", $username);
-	$stmt->execute();
-    ```
-
-In a MySQL client, it's something like this:
-
-   ```
-   mysql> PREPARE stmt1 FROM 'SELECT uid, username FROM user WHERE username=?';
-   mysql> SET @u_name = 'alex';
-   mysql> EXECUTE stmt1 USING @u_name;
-   ```
-
-With prepared statement like these, the parameter value(i.e., $username) is
-combined with a **compiled  statement**, not a SQL string, this way, only legal
-input can be accepted by the SQL server, and no harm can occur.
-
-However, Prepared Statement is not perfect and cannot protect us completely SQL
-injection. Actually, in case of dynamically constructed SQL, there are four
-types of it:
-    * string
-    * number
-    * identifier
-    * syntax keyword
-Prepared Statement can only cover the first two but not the last two because the
-structure of the dynamic query itself cannot be parametrized and certain query
-features cannot be parametrized. With the last two, you have to use some other
-techniques such as "White List Input Validation".
-
-
-#### White List Input Validation
-White List Input Validation try to ensure database security by only allowing
-some words to appear in a SQL query. Those words are put altogether into a
-"white list"(thus the name White List Input Validation). In contrast, Black List
-Input Validation, which is used in Escaping special character, try to achieve
-that by using a black list and disallowing any character in the black list.
-Comparing the two, we can see that the White List Input Validation is more
-robust and efficient. Also, where trying to dynamically put SQL identifier or
-syntax keyword into a SQL query, White List Input Validation can provide a
-greate help. For example:
-
-  ```
-  // Value whitelist
-  // $dir can only be 'DESC' or 'ASC'
-  $dir = !empty($direction) ? 'DESC' : 'ASC'; 
-  $query = "SELECT uid FROM user ORDER BY uid $dir";
-  ```
-
-As can be seen in the above example, we now have a white list that only allow
-two SQL keywords to appear in our final SQL query statement. The $dir variable
-can only be 'DESC' or 'ASC'. This way, we can have a dynamically constructed SQL
-query statement while at the same time ensure database security.
-
-
-#### Stored Procedures
-
-------- Unsafe Example
-    ```java
-    String query = "SELECT account_balance FROM user_data WHERE user_name = "
-      + request.getParameter("customerName");
-    
-    try {
-    	Statement statement = connection.createStatement( … );
-    	ResultSet results = statement.executeQuery( query );
-    }
-    ```
-    (what if the famoust "OR 1=1"? Then it always evaluate to true...)
-    
-
--------- Safe Example (using Stored-procedure)
-    ```java
-    // This should REALLY be validated
-    String custname = request.getParameter("customerName");
-    try {
-    	CallableStatement cs =
-            connection.prepareCall("{call sp_getAccountBalance(?)}");
-    	cs.setString(1, custname);
-    	ResultSet results = cs.executeQuery();		
-    	// … result set handling 
-    } catch (SQLException se) {			
-    	// … logging and error handling
-    }
-    ```
-    (note that the `sp_getAccountBalance()' should have been defined in the
-     database)
-
--------- difference between Stored-procedure and Prepared-statement:
-    The difference between prepared statements and stored procedures is that
-    the SQL code for a stored procedure is defined and stored in the database
-    itself, and then called from the application
-
-(TODO: fullfilled this block...)
-
-
-#### Database Permission Check
-
-     (blah blah blah ...)
-
-
-
-
-Conclusion
+Abstract
 -----------
-(blah blah blah ...)
+近年来由于互联网的快速发展，大数据应用变得越来越重要。
+而在大数据应用中分布式计算占据一个很重要的地位。我们构建了一个用于获取
+网页数据并处理数据的分布式爬虫系统，这个系统的功能与一般搜索引擎所用的
+爬虫功能相似，主要用于快速爬取网页、存储网页和进行数据处理；所不同的是，
+我们尝试了与一般爬虫不同的架构，使得这个架构更加的简洁和灵活，而且便于
+控制，适合于轻量级的爬虫应用。我们将会首先介绍我们所设计的系统的架构，
+然后分析系统的优缺点，最后列出我们使用这个系统进行数据获取时所获得的一些运行数据。
+
+With the development of the Internet, the application of big data starts to 
+become more and more important. Within application of big data, distributed
+computing play an very important role. Recently we build a distributed crawler
+system for distributing web page crawling and data processing. It resemble 
+the crawling system used in search engine, but use a different structure.
+This different but flexible structure make it easy to control, customize and 
+thus suitable for lightweight application. We will first examine the design of
+the structure fo this system. And then we will analyse the cons and pros of this
+structure. Finally we conclude we some real world data that we collect.
 
 
 
+系统架构
+----------
+总体上，我们的爬虫为Client-Server架构。以下是我们的粗略架构图：
 
-TODO: real world SQL-injection example
-
-
-
-
-[1]: 2015 Web Application Attack Report (WAAR)
-[2]: SQL Injection Attacks: Technique and Prevention Mechanism, Gaurav Shrivastava, Kshitij Pathak
-
-
+在这个架构中，主节点只有一个，负责整个爬虫系统的调度，但是本身却不负责爬取，
+子节点有多个，接受主节点的调度信息（主要是待爬取链接）。主节点和子节点之间
+利用网络通信传递链接信息。主节点是被动的，如果子节点向主节点发送链接链接，那么主节点就会
+向其返回一定量的待爬取链接；如果子节点向主节点发送返回请求，那么主节点就会接收一定数量的已爬取链接。
+为了达到这个目的，主节点处需要维护两个链接池：已经"爬取的链接"和"待爬取的链接"。"已经爬取的链接"用
+一个布隆过滤器[3]实现，初始时为空，但是随着子节点返回的链接数量不断增加，其大小可能呈指数式增长，所以，
+为了能够维持庞大数量的链接池并且能够随机存储，我们布隆过滤器使用Linux系统所提供的内存映射机制(memory mapping)，将文件映射为
+内存，这样既能实现链接池容量的扩展，又能随机实现随机储存，而且省去手动管理内存的烦恼。“待爬取的链接”存放
+准备爬取的链接，可以像“已爬取的链接”一样，使用内存映射机制扩展容量，也可以限制大小，因为Internet是一张有
+回路的网络，不用担心某些链接爬不大。
