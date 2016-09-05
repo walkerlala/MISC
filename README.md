@@ -25,7 +25,10 @@ Please remember these three thing as it would be required when we configure the 
 
 Getting Start
 ---------------
-In my way, to build a gcc cross compiler, all you need is a Unix-like operating system, a recent version of gcc and a working networking. I am using arch-linux on a x86-64, and I will now show how to build a cross compiler that **run on x86_64**(the _host_), which would compile and produce programs that run on **mipseb**(the _target_), a big-endian MIPS architecture.
+In my way, to build a gcc cross compiler, all you need is a Unix-like operating system, a recent version of gcc and a working networking. I am using arch-linux on a x86-64, and I will now show how to build a cross compiler that **run on x86_64**(the _host_), but compile and produce programs that run on **mipseb**(the _target_), a big-endian MIPS architecture.
+
+I assume that we are originally in a directory `/home/walkerlala/cross-compile/` before we start.
+
 
 #### Get the source
 
@@ -53,12 +56,12 @@ $ mkdir output
 
 then add the installation’s `bin` subdirectory to your PATH environment variable. You can remove this directory from your PATH later, but most of the build steps expect to find `mipseb-linux-gnu-gcc` and other host tools via the PATH by default.
 ```
-$ export PATH=/absolute/path/to/output/bin:$PATH
+$ export PATH=/home/walkerlala/cross-compile/output/bin:$PATH
 ```
 
 #### unset some environment variables:
 ```
-unset LIBRARY_PATH CPATH C_INCLUDE_PATH PKG_CONFIG_PATH CPLUS_INCLUDE_PATH
+unset LIBRARY_PATH CPATH C_INCLUDE_PATH PKG_CONFIG_PATH CPLUS_INCLUDE_PATH LD_LIBRARY_PATH
 ```
 This is needed to prevent gcc messing up with header files.
 
@@ -68,7 +71,7 @@ we will first compile the binutils packages, which contains the linkers and othe
 ```
 $ mkdir build-binutils
 $ cd build-binutils
-$ ../binutils-2.27/configure --prefix=/absolute/path/to/output --target=mipseb-linux-gnu --disable-multilib
+$ ../binutils-2.27/configure --prefix=/home/walkerlala/cross-compile/output --target=mipseb-linux-gnu --disable-multilib
 $ make -j4
 $ make install
 $ cd ..
@@ -85,7 +88,7 @@ This step install the Linux kernel headers to `output/mipseb-linux-gnu/include`,
 
 ```
 $ cd linux-4.6.5
-$ make ARCH=mips INSTALL_HDR_PATH=/absolute/path/to/output/mipseb-linux-gnu headers_install
+$ make ARCH=mips INSTALL_HDR_PATH=/home/walkerlala/cross-compile/output/mipseb-linux-gnu headers_install
 $ cd ..
 ```
 
@@ -108,7 +111,7 @@ And then we can start to build `mipseb-linux-gnu-gcc`:
 ```
 $ mkdir build-gcc
 $ cd build-gcc
-$ ../gcc-6.1.0/configure --prefix=/absolute/path/to/output --target=mipseb-linux-gnu --enable-languages=c,c++ --disable-multilib
+$ ../gcc-6.1.0/configure --prefix=/home/walkerlala/cross-compile/output --target=mipseb-linux-gnu --enable-languages=c,c++ --disable-multilib
 $ make -j4 all-gcc
 $ make install-gcc
 $ cd ..
@@ -119,17 +122,17 @@ $ cd ..
 
 
 ### install standard C library headers and startup file
-In this step, we install Glibc’s standard C library headers to `/absolute/path/to/output/mipseb-linux-gnu/include`. We use the C compiler built in previous step to compile the library’s startup files and install them to `/absolute/path/to/output/mipseb-linux-gnu/lib`. Finally, we create a couple of dummy files, `libc.so` and `stubs.h`, which are useful in proceeding steps.
+In this step, we install Glibc’s standard C library headers to `/home/walkerlala/cross-compile/output/mipseb-linux-gnu/include`. We use the C compiler built in previous step to compile the library’s startup files and install them to `/home/walkerlala/cross-compile/output/mipseb-linux-gnu/lib`. Finally, we create a couple of dummy files, `libc.so` and `stubs.h`, which are useful in proceeding steps.
 
 ```
 $ mkdir build-glibc
 $ cd build-glibc
-$ ../glibc-2.24/configure --prefix=/absolute/path/to/output/mipseb-linux-gnu --build=$MACHTYPE --host=$MACHTYPE --target=mipseb-linux-gnu --with-headers=/absolute/path/to/output/mipseb-linux-gnu/include --disable-multilib libc_cv_forced_unwind=yes
+$ ../glibc-2.24/configure --prefix=/home/walkerlala/cross-compile/output/mipseb-linux-gnu --build=$MACHTYPE --host=$MACHTYPE --target=mipseb-linux-gnu --with-headers=/home/walkerlala/cross-compile/output/mipseb-linux-gnu/include --disable-multilib libc_cv_forced_unwind=yes
 $ make install-bootstrap-headers=yes install-headers
 $ make -j4 csu/subdir_lib
 $ install csu/crt1.o csu/crti.o csu/crtn.o /opt/cross/aarch64-linux/lib
-$ mipseb-linux-gnu-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o /absolute/path/to/output/mipseb-linux-gnu/lib/libc.so
-$ touch /absolute/path/to/output/mipseb-linux-gnu/include/gnu/stubs.h
+$ mipseb-linux-gnu-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o /home/walkerlala/cross-compile/output/mipseb-linux-gnu/lib/libc.so
+$ touch /home/walkerlala/cross-compile/output/mipseb-linux-gnu/include/gnu/stubs.h
 $ cd ..
 ```
 
