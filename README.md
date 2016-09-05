@@ -2,7 +2,7 @@ How to build a gcc cross compiler
 ====================================
 
 
-Recently I have to configure some routers to suit my need. Those routers are all of MIPS, with some in little endianness and others in big endianness. All the routers are running OpenWrt, a tiny little Linux distro that is built specifically for router. My job is compiling a 802.1x authentication program so that it can work in the router. Unfortunately, the routers have too little memory(16 M) and flash storage(64 M) to host a gcc compiler(and I have no interest in using other compiler for compatibility issue). So I have to build a cross compiler on my own x86_64 Linux box, cross compile the program, send it over ssh to the routers and then start it internally in routers.
+Recently I have to configure some routers to suit my need. Those routers are all of MIPS, with some in little endianness and others in big endianness. All the routers are running OpenWrt, a tiny little Linux distro that is built specifically for router. My job is compiling a 802.1x authentication program so that it can run in the router. Unfortunately, the routers have too little memory(16 M) and flash storage(64 M) to host a gcc compiler(and I have no interest in using other compiler for compatibility issue). So I have to build a cross compiler on my own x86_64 Linux box, cross compile the program, send it over ssh to the routers and then start it internally in routers.
 
 As well-known by any one who himself have build a compiler by hand itself, it is intimidating and time consuming. In this post, I try to explain the procedures needed to achieve that. Hopefully that would be helpful.
 
@@ -20,29 +20,118 @@ When building a cross compiler, it involve an additional point: **the architectu
   * the _build_ platform, which you use to build the compiler,
   * the _host_ platform, which the cross compiler run,
   * the _target_ platform, which the program produced by the cross compiler run
-  *
-Please remember these three thing as it would be required when we are configure that build.
 
-Preliminary
--------------------
-In my way, to build a gcc cross compiler, all you need is a Unix-like operating system, a recent version of gcc and a working networking. I am using arch-linux on a x86_64.
+Please remember these three thing as it would be required when we configure the build process afterward.
 
-### Get the source
+Getting Start
+---------------
+In my way, to build a gcc cross compiler, all you need is a Unix-like operating system, a recent version of gcc and a working networking. I am using arch-linux on a x86-64, and I will now show how to build a cross compiler that **run on x86_64**(the _host_), which would compile and produce programs that run on **mipseb**(the _target_), a big-endian MIPS architecture.
+
+#### Get the source
 
 Fir obtain all the packages needed:
 ```
-$ wget http://ftpmirror.gnu.org/binutils/binutils-2.24.tar.gz
-$ wget http://ftpmirror.gnu.org/gcc/gcc-4.9.2/gcc-4.9.2.tar.gz
-$ wget https://www.kernel.org/pub/linux/kernel/v3.x/linux-3.10.70.tar.xz
-$ wget http://ftpmirror.gnu.org/glibc/glibc-2.20.tar.xz
-$ wget http://ftpmirror.gnu.org/mpfr/mpfr-3.1.2.tar.xz
-$ wget http://ftpmirror.gnu.org/gmp/gmp-6.0.0a.tar.xz
-$ wget http://ftpmirror.gnu.org/mpc/mpc-1.0.2.tar.gz
-$ wget ftp://gcc.gnu.org/pub/gcc/infrastructure/isl-0.12.2.tar.bz2
-$ wget ftp://gcc.gnu.org/pub/gcc/infrastructure/cloog-0.18.1.tar.gz
+$ wget http://ftpmirror.gnu.org/binutils/binutils-2.27.tar.gz
+$ wget http://ftpmirror.gnu.org/gcc/gcc-6.1.0/gcc-6.1.0.tar.gz
+$ wget https://www.kernel.org/pub/linux/kernel/v4.x/linux-4.6.5.tar.xz
+$ wget http://ftpmirror.gnu.org/glibc/glibc-2.24.tar.xz
+$ wget http://ftpmirror.gnu.org/mpfr/mpfr-3.1.4.tar.xz
+$ wget http://ftpmirror.gnu.org/gmp/gmp-6.1.1.tar.xz
+$ wget http://ftpmirror.gnu.org/mpc/mpc-1.0.3.tar.gz
 ```
 Note that that may not be the newest version of the package, and you may want a specific version of some package to suit your need(for example, I want linux-kernel v3.10.70 because my router is running a kernel of that version). Also, in case that the download may be slow, try to find some other mirror sites.
 
+#### untar all packages:
+```
+$ for f in *.tar.*; do tar xvf $f; done
+```
+
+#### make a new dir to hold the all the output files:
+```
+$ mkdir output
+```
+
+then add the installation’s `bin` subdirectory to your PATH environment variable. You can remove this directory from your PATH later, but most of the build steps expect to find `mipseb-linux-gnu-gcc` and other host tools via the PATH by default.
+```
+$ export PATH=/absolute/path/to/output/bin:$PATH
+```
+
+#### unset some environment variables:
+```
+unset LIBRARY_PATH CPATH C_INCLUDE_PATH PKG_CONFIG_PATH CPLUS_INCLUDE_PATH
+```
+This is needed to prevent gcc messing up with header files.
+
+
+### compile binutils
+we will first compile the binutils packages, which contains the linkers and other stuff:
+```
+$ mkdir build-binutils
+$ cd build-binutils
+$ ../binutils-2.27/configure --prefix=/absolute/path/to/output --target=mipseb-linux-gnu --disable-multilib
+$ make -j4
+$ make install
+$ cd ..
+```
+`--disable-multilib` means that we only want our Binutils installation to work with programs and libraries using the `mipseb` instruction set, and not any related instruction sets such as `mipsel`.
+
+After this, you should have three folders under the `output` directory:
+  * the `bin` directory, which hold all the binary file such as `mipseb-linux-gnu-ld`
+  * the `mipseb-linux-gnu` directory
+  * the `share` directory
+
+### install the Linux kernel headers
+This step install the Linux kernel headers to `output/mipseb-linux-gnu/include`, which allow other program(e.g. glibc) to know which kernel are they running against, so that they can make corresponding system calls.
+
+```
+$ cd linux-4.6.5
+$ make ARCH=mips INSTALL_HDR_PATH=/absolute/path/to/output/mipseb-linux-gnu headers_install
+$ cd ..
+```
+
+
+### build the GCC compiler
+In this step, we would build the gcc compiler, with no glibc.
+
+Firts we create symbolic links from the GCC directory to some of the other directories. These five packages are dependencies of GCC, and when the symbolic links are present, GCC’s build script will build them automatically.
+
+```
+$ cd gcc-6.1.0
+$ ln -s ../mpfr-3.1.4 mpfr
+$ ln -s ../gmp-6.1.1 gmp
+$ ln -s ../mpc-1.0.3 mpc
+$ cd ..
+```
+
+And then we can start to build `mipseb-linux-gnu-gcc`:
+
+```
+$ mkdir build-gcc
+$ cd build-gcc
+$ ../gcc-6.1.0/configure --prefix=/absolute/path/to/output --target=mipseb-linux-gnu --enable-languages=c,c++ --disable-multilib
+$ make -j4 all-gcc
+$ make install-gcc
+$ cd ..
+```
+
+  * Because we’ve specified `--target=mipseb-linux-gnu`, the build script looks for the Binutils cross-tools we built in previous step with names prefixed by `mipseb-linux-gnu-`. Likewise, the C/C++ compiler names will be prefixed by `mips-linux-gnu-`.
+  * `--enable-languages=c,c++` prevents other compilers in the GCC suite, such as Fortran, Go or Java, from being built.
+
+
+### install standard C library headers and startup file
+In this step, we install Glibc’s standard C library headers to `/absolute/path/to/output/mipseb-linux-gnu/include`. We use the C compiler built in previous step to compile the library’s startup files and install them to `/absolute/path/to/output/mipseb-linux-gnu/lib`. Finally, we create a couple of dummy files, `libc.so` and `stubs.h`, which are useful in proceeding steps.
+
+```
+$ mkdir build-glibc
+$ cd build-glibc
+$ ../glibc-2.24/configure --prefix=/absolute/path/to/output/mipseb-linux-gnu --build=$MACHTYPE --host=$MACHTYPE --target=mipseb-linux-gnu --with-headers=/absolute/path/to/output/mipseb-linux-gnu/include --disable-multilib libc_cv_forced_unwind=yes
+$ make install-bootstrap-headers=yes install-headers
+$ make -j4 csu/subdir_lib
+$ install csu/crt1.o csu/crti.o csu/crtn.o /opt/cross/aarch64-linux/lib
+$ mipseb-linux-gnu-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o /absolute/path/to/output/mipseb-linux-gnu/lib/libc.so
+$ touch /absolute/path/to/output/mipseb-linux-gnu/include/gnu/stubs.h
+$ cd ..
+```
 
 
 References:
