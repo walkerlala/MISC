@@ -41,6 +41,10 @@ $ wget http://ftpmirror.gnu.org/glibc/glibc-2.24.tar.xz
 $ wget http://ftpmirror.gnu.org/mpfr/mpfr-3.1.4.tar.xz
 $ wget http://ftpmirror.gnu.org/gmp/gmp-6.1.1.tar.xz
 $ wget http://ftpmirror.gnu.org/mpc/mpc-1.0.3.tar.gz
+
+$ sudo apt-get install g++ make gawk
+
+
 ```
 Note that that may not be the newest version of the package, and you may want a specific version of some package to suit your need(for example, I want linux-kernel v3.10.70 because my router is running a kernel of that version). Also, in case that the download may be slow, try to find some other mirror sites.
 
