@@ -21,6 +21,8 @@ When building a cross compiler, it involve an additional point: **the architectu
   * the _host_ platform, which the cross compiler run,
   * the _target_ platform, which the program produced by the cross compiler run
 
+Usually the _build_ and _host_ is the same, but you should know about that difference. 
+
 Please remember these three thing as it would be required when we configure the build process afterward.
 
 Getting Start
@@ -46,7 +48,7 @@ $ sudo apt-get install g++ make gawk
 
 
 ```
-Note that that may not be the newest version of the package, and you may want a specific version of some package to suit your need(for example, I want linux-kernel v3.10.70 because my router is running a kernel of that version). Also, in case that the download may be slow, try to find some other mirror sites.
+Note that that may not be the newest version of the package, and you may want a specific version of some package to suit your need(for example, I want linux-kernel v4.6.5 because my router is running a kernel of that version). Also, in case that the download may be slow, try to find some other mirror sites.
 
 #### untar all packages:
 ```
@@ -81,6 +83,10 @@ $ make install
 $ cd ..
 ```
 `--disable-multilib` means that we only want our Binutils installation to work with programs and libraries using the `mipseb` instruction set, and not any related instruction sets such as `mipsel`.
+
+`--target` is as what explained above
+
+`host` and `build` would usually guessed correctly by the GNU `configure` utility. In this case, They would both be X86.
 
 After this, you should have three folders under the `output` directory:
   * the `bin` directory, which hold all the binary file such as `mipseb-linux-gnu-ld`
@@ -125,20 +131,12 @@ $ cd ..
   * `--enable-languages=c,c++` prevents other compilers in the GCC suite, such as Fortran, Go or Java, from being built.
 
 
-### install standard C library headers and startup file
-In this step, we install Glibc’s standard C library headers to `/home/walkerlala/cross-compile/output/mipseb-linux-gnu/include`. We use the C compiler built in previous step to compile the library’s startup files and install them to `/home/walkerlala/cross-compile/output/mipseb-linux-gnu/lib`. Finally, we create a couple of dummy files, `libc.so` and `stubs.h`, which are useful in proceeding steps.
 
-```
-$ mkdir build-glibc
-$ cd build-glibc
-$ ../glibc-2.24/configure --prefix=/home/walkerlala/cross-compile/output/mipseb-linux-gnu --build=$MACHTYPE --host=$MACHTYPE --target=mipseb-linux-gnu --with-headers=/home/walkerlala/cross-compile/output/mipseb-linux-gnu/include --disable-multilib libc_cv_forced_unwind=yes
-$ make install-bootstrap-headers=yes install-headers
-$ make -j4 csu/subdir_lib
-$ install csu/crt1.o csu/crti.o csu/crtn.o /opt/cross/aarch64-linux/lib
-$ mipseb-linux-gnu-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o /home/walkerlala/cross-compile/output/mipseb-linux-gnu/lib/libc.so
-$ touch /home/walkerlala/cross-compile/output/mipseb-linux-gnu/include/gnu/stubs.h
-$ cd ..
-```
+Now you should have a cross gcc/g++ compiler and some other cross-platform tools in **output/bin**. But there is one important thing that is missed: the standard C/C++ library. Without this, you cannot do much thing with your new cross gcc compiler. However, I have not figured out the *correct* way to build the standard C/C++ library. All I know is that glibc is highly dependent on the Linux kernel. If the version of the glibc you have and the version of the Linux kernel header you have don't match, you would definitely not be be able to build glibc. I would try to figure out that in the future.
+
+
+By the way, there are two quick way to build cross-platform tools: using **buildroot** and **crosstoo-ng**. Using these two things, you can make those cross-platform tools very quickly. And of course, you will have all the standard C/C++ library.
+
 
 
 References:
