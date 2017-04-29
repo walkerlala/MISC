@@ -1,0 +1,745 @@
+"this must be first, because it change other options as a side effect
+set nocompatible
+set encoding=utf-8
+
+filetype off
+
+"pathogen plugin-manager
+execute pathogen#infect()
+execute pathogen#helptags()
+
+"Enable filetype plugin
+filetype plugin indent on
+
+source $VIMRUNTIME/vimrc_example.vim
+
+syntax on
+
+
+"============== plugin configuration =============
+
+"use space for mapleader
+nnoremap <Space> <nop>
+let mapleader=" "
+
+"=== super tab configuration
+"let g:SuperTabDefaultCompletionType = "<c-x><c-o>"
+let g:SuperTabDefaultCompletionType = "context"
+autocmd FileType *
+    \ if &omnifunc != '' |
+    \    call SuperTabChain(&omnifunc,"<c-p") |
+    \endif
+
+"=== easymotion mapping
+map <Leader> <Plug>(easymotion-prefix)
+
+"move across windows, only in normal-mode
+"nmap <Leader>f <Plug>(easymotion-overwin-f)
+
+"bidirectional f-move
+map <Leader>f <Plug>(easymotion-bd-f)
+"<Leader>ff{char} to move to {char}{char}
+map <Leader>ff <Plug>(easymotion-bd-f2)
+"map <Leader>ff <Plug>(easymotion-overwin-f2)
+
+"bidirection, move to line
+map <Leader>j <Plug>(easymotion-bd-jk)
+"nmap <Leader>L <Plug>(easymotion-overwin-line)
+"I use <Leader>j rather than <Leader>l because <Leader>j is more convienient
+"to press
+
+"Move to word
+map  <Leader>w <Plug>(easymotion-bd-w)
+"nmap <Leader>w <Plug>(easymotion-overwin-w)
+
+"find n characters. But need to press <Enter> to continue
+map <Leader>s <Plug>(easymotion-sn)
+
+"==== NERDTree configuration
+map <F4> :NERDTreeToggle<CR>
+"use R in NERDTree buffer to refresh the buffer
+"use m and then a to modify directly the buffer(add or delete entry)
+"or you can auto refresh every 15 second
+"    set autoread
+"    au CursorHold * if exists("t:NerdTreeBufName") | call <SNR>15_refreshRoot() | endif
+
+"=== Syntastic configuration
+set statusline+=%#warningmsg#
+set statusline+=%{SyntasticStatuslineFlag()}
+set statusline+=%*
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_auto_loc_list = 1
+let g:syntastic_check_on_open = 0
+let g:syntastic_check_on_wq = 0
+let g:syntastic_enable_signs=1
+let g:syntastic_enable_signs=1
+
+map <F8> :w<CR>:SyntasticCheck<CR>
+map <F9> :SyntasticToggleMode<CR>
+
+"===== incrsearch configuration
+map / <Plug>(incsearch-forward)
+map ? <Plug>(incsearch-backward)
+map g/ <Plug>(incsearch-stay)
+"<Plug>(incsearch-stay) doesn't movethe cursor
+
+"===== incrsearch-fuzzy configuration
+map z/ <Plug>(incsearch-fuzzy-/)
+map z? <Plug>(incsearch-fuzzy-?)
+map zg/ <Plug>(incsearch-fuzzy-stay)
+
+"===== colorscheme kolor
+" Options must be set before the line `colorscheme kolor' in your vimrc.
+let g:kolor_italic=1                 " Enable italic. Default: 1
+let g:kolor_bold=1                   " Enable bold. Default: 1
+let g:kolor_underlined=0             " Enable underline. Default: 0
+let g:kolor_alternative_matchparen=0 " Gray 'MatchParen' color. Default: 0
+
+"===== clang_format configuration for C/C++
+let g:clang_format_location='clang-format-3.6'
+"let g:clang_format_style='"'.'Google'.'"'
+"hard-coded clang-format style. 
+"note that there must be at least a space after a semicolon(stupid clang_format)
+let g:clang_format_style='"'.'{BasedOnStyle: llvm,AllowAllParametersOfDeclarationOnNextLine: false,AllowShortFunctionsOnASingleLine: Empty,AlwaysBreakTemplateDeclarations: true,ColumnLimit: 0,IndentWidth: 4, NamespaceIndentation: All}'.'"'
+
+let g:clang_format_command_dict=[]
+if exists('g:clang_format_location')
+    cal add(clang_format_command_dict,clang_format_location)
+endif
+if exists('g:clang_format_style')
+    call add(clang_format_command_dict,'-style='.clang_format_style)
+endif
+let g:clang_format_command=join(clang_format_command_dict,' ')
+
+command! ClangFormat call s:RunClangFormat()  "change this function to a command
+function! s:RunClangFormat()
+    "expand(xxx) return the current filename with full path
+    let filename=expand("%:p")
+    "check whether it's a C/C++ file
+    if filename=~'\.cpp\|\.c\|\.cxx\|\.h\|\.hpp'
+        write
+        execute '$read !'.g:clang_format_command.' '.filename
+    endif
+endfunction
+
+" toggle clang format
+nnoremap <F3> Gmz:ClangFormat<CR>`zdgg
+
+"===== Graphic undo configuration
+nnoremap <F5> :GundoToggle<CR>
+let g:gundo_width=60
+let g:gundo_preview_height=40 "<F6> to close preview buffer
+let g:gundo_right=1
+
+"===== powerLine configuration(really should change to `airline'...)
+augroup powerLineSetting
+    autocmd!
+    let g:Powerline_stl_path_style='relative'
+augroup END
+
+"===== silver-searcher-ag configuration(NOT maintained, should change to `ack')
+"mapping for :Ag
+nnoremap <leader>a :Ag<Space>
+let g:ag_highlight=1
+
+"===== haskell-vim configuration
+let g:haskell_enable_quantification=1   "enable highlighting of 'forall'
+let g:haskell_enable_recursivedo=1      "                       'mdo' and 'rec'
+let g:haskell_enable_arrowsyntax=1      "                       'proc'
+let g:haskell_enable_pattern_synonyms=1 "                       'pattern'
+let g:haskell_enable_typeroles=1        "                        type roles
+let g:haskell_enable_static_pointers=1  "                        static
+"let g:haskell_indent_xxxx = xx
+
+"===== clang_complete configuration
+"(:messages to show if there is any output from clang_complete)
+"(how to should function signature but not add it when done auto-complete?)
+
+let g:clang_use_library=1
+let g:clang_library_path='/usr/lib/x86_64-linux-gnu/libclang-3.6.so.1'
+"if there is an error, allow us to see it
+let g:clang_complete_copen=1      "open quickfix window on error
+"let g:clang_hl_errors=1 "highlight warnings and errors the same way as clang
+let g:clang_complete_macros=1
+let g:clang_complete_patterns=0
+let g:clang_hl_errors=1
+let g:clang_debug=1
+"limit memory use
+let g:clang_complete_percent=70
+let g:clang_user_options='-std=c++11 || exit 0'
+"let g:clang_user_options='-std=c++11 || exit 0'
+" auto-select the first entry in the popup menu and but not insert it
+let g:clang_auto_select=1
+" let it complete for macros
+let g:clang_complete_macros=1
+
+"set conceallevel=2
+"set concealcursor=vin
+" so that we can comlete for the parameter, and use <Tab> in normal to jump to
+" the next parameter
+let g:clang_snippets=1
+let g:clang_snippets='clang_complete'
+let g:clang_conceal_snippets=2
+"let g:clang_complet_optional_args_in_snippets=1
+"let g:clang_trailing_placeholder=0
+
+"call g:ClangGotoDeclaration() to jump to a declaration(you can also
+"use <C-]> to do the same thing. But this function can be used to do a mapping
+"call g:ClangGotoDeclarationPreview() to view it in a preview window. you can
+"also do it by <C-w>]
+
+"clang_complete can also jump to declaration of a symbol
+"using <C-]> and jump back using <C-T>
+
+"above is all you need for clang_complete. If you need more c++ library for
+"autocompletion, then add some kind of these line to the .clang_complete in
+"your project's root directory
+"-std=c++11
+"-I/usr/include/QtGui    #location of your library's header file
+"-I/usr/include/QtCore
+"-I.
+"or you can use this: g:clang_auto_user_options='-I/usr/lib/xxxx'
+
+"====== mapping for tagbar
+nnoremap <F10> :TagbarToggle<CR>
+
+"====== jedi-vim configuration
+" g:jedi#goto_command - go to definition or assignment(Default <leader>d)
+let g:jedi#show_call_signatures=1  
+
+"====== indentLine configuration
+"Character color
+" Vim
+let g:indentLine_color_term = 321
+" Gvim
+let g:indentLine_color_gui = '#666666'  "RGB
+" none X terminal
+let g:indentLine_color_tty_light = 7 "default 4
+let g:indentLine_color_dark = 1 "default 2
+"indent char
+let g:indentLine_char = '|'
+let g:indentLine_enabled=0 "default not enabled, use :IndentLines... to enable
+
+"====== bufferline configuration
+nnoremap <F2> :echo bufferline#get_echo_string()<CR>
+
+"====== Tabular configuration
+if exists (":Tabularize")
+    nmap <leader>= :Tabularize /=<CR>
+    vmap <leader>= :Tabularize /=<CR>
+    nmap <leader>: :Tabularize /:\zs<CR>
+    vmap <leader>: :Tabularize /:\zs<CR>
+endif
+
+"====== Larget File handling
+let g:LargeFile=50
+" use :Unlarge to undo the LargeFile setting
+" use :Large   to do it
+" use :Large!  to force 
+
+"====== Rainbow highlighting
+" just use :Rainbow, or see the help file
+
+" tim pope's excellent configuration for editting markdown
+" (only work for | now, you can add another char if you wish)
+inoremap <silent> <Bar>   <Bar><Esc>:call <SID>align()<CR>a
+function! s:align()
+    let p = '^\s*|\s.*\s|\s*$'
+    if exists(':Tabularize') && getline('.') =~# '^\s*|' && (getline(line('.')-1) =~# p || getline(line('.')+1) =~# p)
+        let column = strlen(substitute(getline('.')[0:col('.')],'[^|]','','g'))
+        let position = strlen(matchstr(getline('.')[0:col('.')],'.*|\s*\zs.*'))
+        Tabularize/|/l1
+        normal! 0
+        call search(repeat('[^|]*|',column).'\s\{-\}'.repeat('.',position),'ce',line('.'))
+    endif
+endfunction
+
+
+"a cheat-sheet for my <F-*> mapping
+"nnoremap <F2> :echo bufferline#get_echo_string()
+"nnoremap <F3> Gmz:ClangFormat<CR>`zdgg #perform clang-format
+"map <F4> :NERDTreeToggle<CR>           #open NERDTree buffer
+"nnoremap <F5> :GundoToggle<CR>         #open Graphic-Undo-Buffer
+"nnoremap <F6> :ccl<CR>                 #close the quickfix window
+"map <F8> :w<CR>:SyntasticCheck<CR>     #perform Syntatic check
+"map <F9> :SyntasticToggleMode<CR>      #Syntatic-Checker negative mode
+"nnoremap <F10> :TagbarToggle<CR>
+
+"============== end plugin configuration =================
+
+
+"============== vim builtin configuration ==============
+set background=dark
+if has('gui_running')
+    "colorscheme solarized
+    colorscheme default
+    "dont set cursorline in terminal, it suck
+    set cursorline
+else
+    "colorscheme kolor
+    colorscheme default
+endif
+
+" this doesnt affect much
+if $COLORTERM=='gnome-terminal'
+    set t_Co=256
+endif
+
+set laststatus=2
+
+"use set guifont=* to bring up the font selector
+"set guifont=Monaco\ Italic\ 10
+set guifont=Source\ Code\ Pro\ Medium\ Italic\ 11.5
+
+set number
+"set relativenumber
+
+"avoid the annoying `write before xxx' when hide buffer
+set hidden
+
+"incrementally match the search
+set incsearch
+
+"try to be smart when searching
+set smartcase
+
+"don't ignore when searching
+set noignorecase
+"show line and column number
+set ruler
+
+" I hate the damned beeping
+set visualbell
+
+"set viminfo+=n$VIM/.viminfo
+
+"diable error bell
+set noerrorbells
+
+"show the command you have type
+set showcmd
+
+"show the current mode
+set showmode
+
+"hide the mouse when typing
+set mousehide
+
+set mouse=a
+set history=1000
+set nobackup
+set shiftwidth=4
+set numberwidth=4
+set tabstop=4
+
+"have to create these dir yourself first
+set undodir=~/.vim/tmp/undodir//
+set backupdir=~/.vim/tmp/backup/
+
+set undofile "so that you can undo even if you have close the file
+set undolevels=1000
+"put all the undofile together so that you won't have those annoying
+"undofile in the current directory(but now you have `gundo'...
+
+"indentation setting
+set smartindent
+set autoindent
+set cindent
+
+"scroll off when you are moving vertically useing j/k
+set scrolloff=7
+
+"turn on wild menu so you can see the wild-match on the status-line
+set wildmenu
+
+"ignore compiled file
+"set wildignore=*.o,*.exe,*.pyc
+
+"height of command bar
+set cmdheight=2
+
+"don't break a line
+set nolinebreak
+
+"use space instead of tabs
+set expandtab
+
+"this affect the behavior of 'jk' in insert mode
+set timeoutlen=700
+
+"these command open folder
+set foldopen=block,insert,jump,mark,quickfix,search,tag,undo
+
+"when completing by tag, show full tag
+set showfulltag
+
+"use the same clipboard as that of the system
+set clipboard=unnamed 
+"use p to paste from system clipboard
+"use "+yy to yank to system clipboard
+vnoremap y "+y
+vnoremap Y "+Y
+nnoremap y "+y
+nnoremap Y "+Y
+
+"check this out
+set ambiwidth=double
+
+"don't want menubar, want scroll bar
+set guioptions=egtr
+"defaults on MS-Windows:
+"set guioptions=egmrLtT
+
+"read file if has been changed outside
+set autoread
+
+"automatically write when some events are triggered(what event?)
+set autowriteall
+
+"automatically change working directory
+"set autochdir
+
+set wrap
+
+"Enable magic matching
+set magic
+
+" Indent related, see indent.txt
+" gN Place C++ scope declarations N characters from the indent of the
+"    block they are in.  (default 'shiftwidth').  A scope declaration
+"    can be "public:", "protected:" or "private:".
+" :N Place case labels N characters from the indent of the switch()
+" N-s namespace 
+" (N    When in unclosed parentheses, indent N characters from the line with the unclosed parentheses.
+" c0 is c-like comment related
+set cinoptions+=g0,:0,(0,c0,W4,w1,t0,Ls
+"set cinoptions+=N-s  "c++ namespace related
+"the cinoptions 'Ls' means indent a label a shiftwidth to the left
+
+"the defaults, spelled out in full, are:
+"cinoptions=>s,e0,n0,f0,{0,}0,^0,L-1,:s,=s,l0,b0,gs,hs,N0,ps,ts,is,+s,
+			"c3,C0,/0,(2s,us,U0,w0,W0,k0,m0,j0,J0,)20,*70,#0
+      
+"format options
+set formatoptions=croqlj
+"the default is croql, the 'j' mean that when joining
+"lines, remove a command reader. Example:
+" Joinning     int j;   //first line
+"                       //second line
+" Become       int j;   //first line second line
+
+"turn off the stupid highlight search
+nnoremap <silent> ,n :nohls<CR>
+
+"cd to the directory containing the file in the buffer
+nmap <silent> ,cd :lcd %:h<CR>
+
+"this option should 'squezz' 'headroom' space for the gui-vim
+"However, in ubuntu, there is a still annoying head-tool-bar there
+set guiheadroom=-100
+
+"equal to :winsize {width} {height}
+set lines=39
+set columns=84
+
+"the startup windows position
+winpos  683 30
+
+"set file for keyword-completion
+set complete+=s,k,d
+" 's' option stand for looking into a thesaurus-file given in the saurus option
+" 'k' option stand for looking into a dict-file given in the dictionary option
+" 'd' option ... scan current and included file for defined name and macro
+
+"preview windows would show you the doc of the completing-func,which is unnecessary
+"if you want the preview windows, then use the 'preview' option. After that
+"you can close the preview option with 'au CompleteDone * pclose'
+set completeopt-=preview
+
+" gq  is the operator to format text. Universally, select a block of text and
+" then press  gq  , and then vim will handle the format for you
+
+"switch between tags
+nnoremap <C-TAB> :tabnext<CR>
+
+"switch to a new buffer
+":ls to list buffer, or use vim-fugitive
+nnoremap <leader><Tab> :b
+
+"close the quick fix window
+nnoremap <F6> :ccl<CR>
+
+" filename/directory name completion
+" seem like that SuperTab have done that..
+inoremap <C-f> <C-x><C-f>
+
+nnoremap L $
+nnoremap H ^
+vnoremap L $
+vnoremap H ^
+
+"use <S-Tab> to transfer between windows
+nnoremap <S-Tab> <C-W>w
+inoremap <S-Tab> <C-O><C-W>w<esc>
+cnoremap <S-Tab> <C-C><C-W>w
+onoremap <S-Tab> <C-C><C-W>w
+
+no <left> <Nop>
+no <right> <Nop>
+no <down> ddp
+no <up> ddkP      
+"note that this is a uppercase p
+ino <down> <Nop>
+ino <up> <Nop>
+ino <left> <Nop>
+ino <right> <Nop>
+vno <down> <Nop>
+vno <up> <Nop>
+vno <left> <Nop>
+vno <right> <Nop>
+
+" enlarge the current entire gvim windows(not so working...)
+nnoremap <C-\> <Esc>:set columns+=3 <bar> set lines+=3<CR>
+
+"this is used to enlarge the current buffer window you are in
+nnoremap <M-[> <C-w>2<
+nnoremap <M-]> <C-w>2>
+nnoremap <M-;> <C-w>2+
+nnoremap <M-'> <C-w>2-
+
+"make it ease to edit and source the .vimrc file
+nnoremap ev :vsplit $MYVIMRC<CR>
+nnoremap ec :source $MYVIMRC<CR>
+
+"this would redraw the current line to the center of the windows
+"there are also z<CR> and z- to the top and the bottom
+nnoremap <c-c> zz
+inoremap <c-c> <esc>zza
+"note that 'z.' has the same effect, but it put the cursor to the first column
+"note that even if we have map the <esc> to <nop>, we could still use it here since
+"we use 'none-recursive map', which default to the default
+
+"to insert newline while remaining in normal mode
+nnoremap <CR> O<esc>
+
+"just type jk or kj to get back to normal mode 
+inoremap jk <esc>
+inoremap kj <esc>
+vnoremap jk <esc>
+vnoremap kj <esc>
+"vnoremap <Space><Space> <esc>
+
+"check out operator-pending mapping
+"there is a pretty cool one. guess what it mean:
+"   onoremap b /pattern<cr>
+"then press 'db'. It will delete till the first 'pattern' found
+"turn out that vim's operator-mapping tech is super powerful!!!!
+
+"show vim command history
+nnoremap <C-h> q:
+
+"originally, g<Ctrl-]> would jump to definition
+"             <Ctrl-]> would jump to declaration
+nnoremap <C-[> g<C-]>
+
+"textwidth for all filetype
+" textwidth 0 means no textwidth(arbitarily long)
+set textwidth=80
+
+"when searching, I want to type n to incrementally search
+"but vim does the opposite. reverse it
+nnoremap n N
+
+"folding mapping
+nnoremap <space>a za
+"zi to swich folding on and off
+"zR open all fold, zM close all fold
+
+" intuitively move up and down
+noremap j gj
+noremap k gk
+noremap $ g$
+noremap 0 g0
+
+"vimscript:ABBREVIATIONS{{{
+iabbr adn and
+iabbr waht what
+iabbr teh the
+iabbr wnat want
+iabbr wihch which
+iabbr commadn command
+iabbr tehn then
+iabbr taht that
+iabbr fiel file
+iabbr retrun return
+iabbr Alos Also
+iabbr alos also
+iabbr Aslo Also
+iabbr aslo also
+iabbr Exmaple Example
+iabbr exmaple example
+iabbr Shoudl Should
+iabbr shoudl should
+"}}}
+
+" a very educational vimscript example
+command! -complete=shellcmd -nargs=+ Shell call s:RunShellCommand(<q-args>)
+
+function! s:RunShellCommand(cmdline)
+    echo a:cmdline
+    let expanded_cmdline=a:cmdline
+    for part in split(a:cmdline,' ')
+        if part[0]=~'\v[%#<]'
+            let expanded_part=fnameescape(expand(part))
+            let expanded_cmdline=substitute(expanded_cmdline,part,expanded_part,'')
+        endif
+    endfor
+    botright new
+    setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile nowrap
+    call setline(1,'You Entered:  '.a:cmdline)
+    call setline(2,'Expanded From:  '.expanded_cmdline)
+    "call setline(3,substitute(getline(2),'.','=','g'))
+    execute '$read !'.expanded_cmdline
+    setlocal nomodifiable
+    1
+endfunction
+
+"read eval.txt for vim's expression 
+
+"================== end builtin configuration ======================
+
+
+"================== filetype configuration =========================
+
+"====== simple configuration for html
+let g:html_indent_inctags="html,body,head,tbody"
+
+
+"vimscript: FOLDING setting {{{
+"pressing za to fold this and unfold the folder
+"mayber 'marker' simply mean the {{{ and }}}
+augroup filetype_vim
+    autocmd!
+    autocmd FileType vim setlocal foldmethod=marker
+    "when foldlevel is set with a larger number, folder get opened
+    autocmd FileType vim setlocal foldlevel=99
+    "autocmd FileType vim setlocal foldclose=all
+augroup END
+"}}}
+
+augroup filetype_c
+    autocmd!
+    "omini code completion(default to C completion provide with vim)
+    autocmd Filetype c set omnifunc=syntaxcomplete#Complete
+    "associate .h filew with c syntax hightlighting
+    autocmd BufNewFile,BufReadPost *.h set filetype=c
+    autocmd Filetype c let g:syntastic_c_check_header=1
+    autocmd Filetype c let g:syntastic_c_compiler_options='-W -Wall -pedantic -c99'
+    autocmd Filetype c set foldmethod=syntax
+    autocmd Filetype c set nofoldenable
+augroup END
+
+augroup filetype_cpp
+    autocmd!
+    autocmd Filetype cpp let g:syntastic_cpp_check_header=1
+    "let g:syntastic_cpp_remove_include_errors=1
+    autocmd Filetype cpp let g:syntastic_cpp_compiler_options='-W -Wall -pedantic -std=c++11'
+    autocmd Filetype cpp set foldmethod=syntax
+    autocmd Filetype cpp set nofoldenable
+augroup END
+" if set, clang_complete won't be loaded.
+"let g:clang_complete_loaded=1
+
+augroup filetype_python
+    autocmd!
+    autocmd FileType python  let g:indentLine_enabled=1
+    autocmd FileType python  let g:python_highlight_all=1
+    "if dont set syntastic checker, it would default to python
+    "let g:syntastic_python_checkers = ['/usr/local/bin/pylint']
+    " jedi#goto() default to map to <leader>d
+    autocmd FileType python nnoremap <c-[> :call jedi#goto()<CR>
+    "autocmd FileType python set foldmethod=indent
+    "autocmd FileType python set nofoldenable
+augroup END
+
+"to use the perl checker, have to:
+"    let g:syntastic_perl_checkers = ['perl\]
+"    let g:syntastic_enable_perl_checkers = 1
+"this is not enable by default because of security reason
+
+augroup filetype_sml
+    autocmd!
+    autocmd FileType sml let g:syntastic_always_populate_loc_list=1
+    autocmd FileType sml let g:syntastic_auto_loc_list=1
+    "autocmd FileType sml let g:indentLine_enabled=1
+augroup END
+
+"prefer markdown syntax highlighting(or it would be treated as Modula-2
+autocmd BufNewFile,BufReadPost *.md set filetype=markdown
+
+"prefer gas syntax highlighting
+autocmd BufNewFile,BufReadPost *.S   set filetype=gas
+autocmd BufNewFile,BufReadPost *.asm set filetype=gas
+
+"autocmd FileType haskell let g:indentLine_enabled=1
+autocmd FileType ruby    let g:indentLine_enabled=1
+
+"vimscript: COMMENT_SETTINGs for some languages{{{
+augroup comment_setting
+    "used to comment out a line with with the corresponding style
+    autocmd Filetype cpp nnoremap        <M-->  I//<Esc>j
+    autocmd Filetype java nnoremap       <M-->  I//<esc>j
+    autocmd Filetype javascript nnoremap <M-->  I//<Esc>j
+    autocmd Filetype c nnoremap          <M-->  I/*<esc>A*/<esc>j
+    autocmd Filetype python nnoremap     <M-->  I#<esc>j
+    autocmd Filetype vim nnoremap        <M-->  I"<esc>j
+    autocmd Filetype sh nnoremap         <M-->  I#<esc>j
+    autocmd Filetype perl nnoremap       <M-->  I#<esc>j
+    autocmd Filetype css nnoremap        <M-->  I/*<esc>A*/<esc>j
+    autocmd Filetype sml nnoremap        <M-->  I(*<esc>A*)<esc>j
+
+    "accordingly, to cancel the comment:
+    autocmd Filetype cpp nnoremap        <M-=> ^xx<Esc>j
+    autocmd Filetype java nnoremap       <M-=> ^xx<esc>j
+    autocmd Filetype javascript nnoremap <M-=> ^xx<Esc>j
+    autocmd Filetype c nnoremap          <M-=> ^xx<esc>$xx<esc>j
+    autocmd Filetype python nnoremap     <M-=> ^x<esc>j
+    autocmd Filetype vim nnoremap        <M-=> ^x<esc>j
+    autocmd Filetype sh nnoremap         <M-=> ^x<esc>j
+    autocmd Filetype perl nnoremap       <M-=> ^x<esc>j
+    autocmd Filetype css nnoremap        <M-=> ^xx<esc>$xx<esc>j
+    autocmd Filetype sml nnoremap        <M-=> ^xx<esc>$xx<esc>j
+
+    "also note that some key-mapping just don't work when you use
+    "vim in terminal, like the <M--> one
+
+    "to create a traditional c-style comment above the current line
+    autocmd Filetype c nnoremap <S-CR>   O/* */<Esc>hi
+    "add traditional c-style comment to the right of current line
+    autocmd Filetype c nnoremap <C-l>    $a   /* */<esc>hha
+    autocmd Filetype c inoremap <C-l>    <esc>$a   /* */<esc>hha
+
+    " add a comment above the current line(note the tailing whitespace)
+    autocmd Filetype cpp nnoremap <S-CR> O// 
+    "add traditional c-style comment to the right of current line
+    autocmd Filetype cpp nnoremap <C-l>  $a   /* */<esc>hha
+    autocmd Filetype cpp inoremap <C-l>  <esc>$a   /* */<esc>hha
+
+    autocmd Filetype java nnoremap <S-CR> O// 
+    "add traditional c-style comment to the right of current line
+    autocmd Filetype java nnoremap <C-l>  $a   /* */<esc>hha
+    autocmd Filetype java  inoremap <C-l> <esc>$a   /* */<esc>hha
+
+    " add a comment above the current line(note the tailing whitespace)
+    autocmd Filetype java nnoremap   <S-CR> O// 
+    autocmd Filetype vim nnoremap    <S-CR> O" 
+    autocmd Filetype sh nnoremap     <S-CR> O# 
+    autocmd Filetype python nnoremap <S-CR> O# 
+    autocmd Filetype perl nnoremap   <S-CR> O# 
+    autocmd Filetype css nnoremap    <S-CR> O/* */<Esc>hi
+    autocmd Filetype sml nnoremap    <S-CR> O(* *)<Esc>hi
+
+augroup END
+"}}}
+
+"set tags=/path/to/tags
