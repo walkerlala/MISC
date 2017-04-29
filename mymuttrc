@@ -1,0 +1,54 @@
+set ssl_starttls=yes
+set ssl_force_tls=yes
+set imap_user='ablacktshirt@gmail.com'
+
+#set imap_pass=''
+set from='ablacktshirt@gmail.com'
+
+set realname='Yubin Ruan'
+set folder='imaps://imap.gmail.com'
+set spoolfile='imaps://imap.gmail.com/INBOX'
+set postponed='imaps://imap.gmail.com/[Gmail]/Draft'
+set header_cache='~/.mutt/cache/headers'
+set message_cachedir='~/.mutt/cache/bodies'
+set certificate_file='~/.mutt/certificates'
+
+set smtp_url='smtps://ablacktshirt@gmail.com@smtp.gmail.com:465'
+
+# get all the tags/folder in Gmail
+set imap_check_subscribed
+
+set move=no
+set imap_keepalive=900
+
+bind pager j next-line
+bind pager k previous-line
+bind attach,index,pager \CD next-page
+bind attach,index,pager \CU previous-page
+#bind pager gg top
+#bind pager G bottom
+bind attach,index gg first-entry
+bind attach,index G last-entry
+
+# to reply-all, use `g' in the pager
+
+# so that you can see and edit the `From', `Cc' header field
+set edit_headers=yes
+
+# show context line when going to next page
+set pager_context=3
+
+# stop at the end instead of displaying next mail
+set pager_stop=yes
+
+set editor='vim'
+
+set sidebar_visible=yes
+set sidebar_delim='|'
+set sidebar_sort=yes
+bind index \CK sidebar-prev
+bind index \CJ sidebar-next
+bind index \CO sidebar-open
+bind pager \CK sidebar-prev
+bind index \CJ sidebar-next
+bind index \CO sidebar-open
