@@ -49,7 +49,8 @@ bind attach,index G last-entry
 bind pager gr group-reply
 bind index gr group-reply
 
-#to reply all, use `g' in the pager
+#set index_format="%4C %Z %{%m/%d-%T} %-16.15F %s" # format of the browser
+set pager_index_lines=10
 
 # header editable
 #### you want to unset these so that you can customize
