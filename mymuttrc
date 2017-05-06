@@ -1,54 +1,73 @@
-set ssl_starttls=yes
+set realname = "Yubin Ruan"
+set from = "ablacktshirt@gmail.com"
+set use_from = yes
+set envelope_from = yes
+
+set smtp_url = "smtps://ablacktshirt@gmail.com@smtp.gmail.com:465/"
+#set smtp_pass = "<gmail password>"
+set imap_user = "ablacktshirt@gmail.com"
+#set imap_pass = "<gmail password>"
+set folder = "imaps://imap.gmail.com:993"
+set spoolfile = "+INBOX"
+set postponed="+[Gamil]/Drafts"
+set record="+[Gamil]/Sent Mail"
+#set sort='threads'
+set header_cache=~/.mutt/cache/headers
+set message_cachedir=~/.mutt/cache/bodies
+
 set ssl_force_tls=yes
-set imap_user='ablacktshirt@gmail.com'
 
-#set imap_pass=''
-set from='ablacktshirt@gmail.com'
+set editor="vim"
+set move=no
+set auto_tag=yes
+set charset="utf-8"
 
-set realname='Yubin Ruan'
-set folder='imaps://imap.gmail.com'
-set spoolfile='imaps://imap.gmail.com/INBOX'
-set postponed='imaps://imap.gmail.com/[Gmail]/Draft'
-set header_cache='~/.mutt/cache/headers'
-set message_cachedir='~/.mutt/cache/bodies'
-set certificate_file='~/.mutt/certificates'
-
-set smtp_url='smtps://ablacktshirt@gmail.com@smtp.gmail.com:465'
-
-# get all the tags/folder in Gmail
+set mail_check=120
 set imap_check_subscribed
 
-set move=no
-set imap_keepalive=900
+auto_view text/html
+
+bind editor ^T complete-query
+
+# siderbar conf
+bind index,pager \ck sidebar-prev
+bind index,pager \cj sidebar-next
+bind index,pager \co sidebar-open
+set sidebar_width=28
+set sidebar_visible=yes
+set sidebar_sort=no
 
 bind pager j next-line
 bind pager k previous-line
 bind attach,index,pager \CD next-page
 bind attach,index,pager \CU previous-page
-#bind pager gg top
-#bind pager G bottom
+bind pager gg top
+bind pager G bottom
 bind attach,index gg first-entry
 bind attach,index G last-entry
+##reply-to-all
+bind pager gr group-reply
+bind index gr group-reply
 
-# to reply-all, use `g' in the pager
+#to reply all, use `g' in the pager
 
-# so that you can see and edit the `From', `Cc' header field
+# header editable
+#### you want to unset these so that you can customize
+#unset use_from
+#unset use_domain
+#unset user_agent
 set edit_headers=yes
-
-# show context line when going to next page
-set pager_context=3
-
-# stop at the end instead of displaying next mail
-set pager_stop=yes
-
-set editor='vim'
-
-set sidebar_visible=yes
-set sidebar_delim='|'
-set sidebar_sort=yes
-bind index \CK sidebar-prev
-bind index \CJ sidebar-next
-bind index \CO sidebar-open
-bind pager \CK sidebar-prev
-bind index \CJ sidebar-next
-bind index \CO sidebar-open
+#add your own header. my_hdr <FIELD>:<VALUE>
+#
+# ##Extra info
+# my_hdr X-Info: Keep it Simple, stupid
+#
+# ## OS Info
+# my_hdr X-Operating-System: xxxxx
+#
+# ##This header only appears to MS Outlook users
+# my_hdr X-Message-Flag: WARNING!! Outlook sucks
+#
+# ## Custom Mail-User-Agent ID
+# my_hdr User-Agent: Every email client sucks, this one just suck less
+#
