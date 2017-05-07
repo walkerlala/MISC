@@ -28,6 +28,7 @@ set sort_aux=date-received      # sort thread by date received
 set mark_old=no                 # dont mark unread message as old
 #set pager_context=3             # display 3 lines of context in pager
 #set pager_stop                  # dont skip msgs on next page
+set quit=ask-yes                # ask before exit. Default to yes
 
 #############################################
 # auto_view configuration
@@ -86,6 +87,10 @@ bind index gr group-reply
 
 #set index_format="%4C %Z %{%m/%d-%T} %-16.15F %s" # format of the browser
 set pager_index_lines=10
+
+# just like `scrolloff' in vim
+set menu_scroll=yes
+set menu_context=5
 
 # use $ (stands for "sync-mailbox") to sync with the imap server
 #
