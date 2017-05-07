@@ -311,6 +311,31 @@ hdr_order From: Subject: To: CC: BCC: Reply-To: Mail-Followup-To: Date: Organiza
 # END header configuration
 ###################################################
 
+######################
+# Macro 
+########################
+macro index A \
+    "<tag-pattern>~N<enter><tag-prefix><clear-flag>N<untag-pattern>.<enter>" \
+    "mark all new as read"
+# <tag-pattern> is starts a tag pattern; it’s the same as the default
+#               keybinding l in a Mutt session.
+# ~N<enter>     matches all messages marked as “new”, so that we tag all
+#               new messages.
+# <tag-prefix>  means apply the next function to all tagged messages; it’s the
+#               same as the default keybinding ; in a Mutt session.
+# <clear-flag>  is the function we want to apply to all tagged messages; it’s
+#               the same as the default keybinding W in a mutt session. (w sets
+#               a flag; W clears one.)
+# N             is the “new” flag that we want to clear from all tagged (i.e.
+#               new) messages.
+# <untag-pattern> starts an untag pattern.
+# .             matches everything, so that we untag everything.
+
+
+################
+# END Macro
+################
+
 # HTML is the last option.
 alternative_order text/plain text/enriched text/html 
 
