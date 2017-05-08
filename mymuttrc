@@ -9,8 +9,9 @@ set imap_user = "ablacktshirt@gmail.com"
 #set imap_pass = "<gmail password>"
 set folder = "imaps://imap.gmail.com:993"
 set spoolfile = "+INBOX"
-set postponed="+[Gamil]/Drafts"
-set record="+[Gamil]/Sent Mail"
+set postponed="+[Gmail]/Drafts"
+#set record="+[Gmail]/Sent Mail"
+set record="+[Gmail]/Sent Mail"
 #set sort='threads'
 set header_cache=~/.mutt/cache/headers
 set message_cachedir=~/.mutt/cache/bodies
@@ -18,6 +19,7 @@ set message_cachedir=~/.mutt/cache/bodies
 set ssl_force_tls=yes
 
 set editor="vim"
+set mbox=+INBOX                 # Default mailbox.
 set move=no                     # Hold messages in $MAIL
 set auto_tag=yes
 set charset="utf-8"
@@ -71,7 +73,7 @@ bind index,pager \cj sidebar-next
 bind index,pager \co sidebar-open
 set sidebar_width=28
 set sidebar_visible=yes
-set sidebar_sort=no
+set sidebar_sort=no   # I want to sort the mailbox as the order I list them
 
 bind pager j next-line
 bind pager k previous-line
@@ -336,6 +338,70 @@ macro index A \
 # END Macro
 ################
 
+###################################################################
+# list of folders that are considered to be mailboxes (folders that
+# receive incoming mail
+#
+# Just list the more important mailboxs you want to see first, mutt
+# will automatically fillout the others left
+###################################################################
+mailboxes !
+mailboxes =INBOX
+mailboxes =perfbook
+mailboxes =mutt-user 
+mailboxes =[Gmail]
+mailboxes =[Gmail]/重要
+mailboxes =[Gmail]/Sent\ Mail
+mailboxes =[Gmail]/Drafts
+mailboxes =[Gmail]/已发邮件
+mailboxes =[Gmail]/垃圾邮件
+mailboxes =[Gmail]/已删除邮件
+mailboxes =[Gmail]/已加星标
+mailboxes =[Gmail]/草稿
+mailboxes =[Gmail]/所有邮件
+#mailboxes =[Imap]   #you cannot explicitly state the `[Imap]' folder
+mailboxes =Sent
+#mailboxes =Drafts
+mailboxes =Archive
+mailboxes =Trash
+mailboxes =haiku
+mailboxes =haiku/haiku-devel
+mailboxes =haiku/haiku-list
+mailboxes =haiku/haiku-web
+mailboxes =haiku/haikuports-commits
+mailboxes =FreeBSD
+mailboxes =FreeBSD/freebsd-hackers
+mailboxes =FreeBSD/freebsd-questions
+mailboxes =FreeBSD/freebsd-hardware
+mailboxes =FreeBSD/freebsd-current
+mailboxes =linux-kernel
+mailboxes =linux-kernel/fs-encrypt
+mailboxes =linux-kernel/kernel-newbie
+mailboxes =linux-kernel/linux-doc
+mailboxes =linux-kernel/linux-ext4
+mailboxes =linux-kernel/linux-fsdevel
+mailboxes =linux-kernel/linux-mm
+mailboxes =linux-kernel/linux-netfilter
+mailboxes =linux-kernel/linux-xfs
+mailboxes =linux-kernel/xfstest
+mailboxes =haskell
+mailboxes =haskell/haskell-cafe
+mailboxes =haskell/haskell-list
+mailboxes =haskell/haskell-beginner
+mailboxes =python
+mailboxes =python/python-Dev
+mailboxes =python/python-list
+mailboxes =ubuntu-user
+mailboxes =java-concurrency
+mailboxes =Self
+mailboxes =Self/Self-Note
+
+#############################################################
+# END mailboxes
+##############################################################
+
+#
+#
 # HTML is the last option.
 alternative_order text/plain text/enriched text/html 
 
