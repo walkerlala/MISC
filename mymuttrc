@@ -11,7 +11,6 @@ set folder = "imaps://imap.gmail.com:993"
 set spoolfile = "+INBOX"
 set postponed="+[Gmail]/Drafts"
 set record="+Sent"  #thunderbird use this, so let mutt use this too
-#set sort='threads'
 set header_cache=~/.mutt/cache/headers
 set message_cachedir=~/.mutt/cache/bodies
 
@@ -25,11 +24,16 @@ set charset="utf-8"
 set mail_check=60               # check new mails every 60s
 set imap_check_subscribed
 set include                     # include message in replies
+#set sort='threads'
 set sort_aux=date-received      # sort thread by date received
 set mark_old=no                 # dont mark unread message as old
 #set pager_context=3             # display 3 lines of context in pager
-#set pager_stop                  # dont skip msgs on next page
+set pager_stop                  # dont skip msgs on next page
 set quit=ask-yes                # ask before exit. Default to yes
+
+# put the encoding in your mail, so that other people's mail client 
+# decode your email.
+set send_charset='us-ascii:iso-8859-1:utf-8:gb2312"
 
 #############################################
 # auto_view configuration
@@ -332,7 +336,6 @@ macro index A \
 # <untag-pattern> starts an untag pattern.
 # .             matches everything, so that we untag everything.
 
-
 ################
 # END Macro
 ################
@@ -361,6 +364,7 @@ mailboxes =[Gmail]/所有邮件
 mailboxes =Sent
 mailboxes =Archive
 mailboxes =Trash
+mailboxes =java-concurrency
 mailboxes =haiku
 mailboxes =haiku/haiku-devel
 mailboxes =haiku/haiku-list
@@ -389,9 +393,13 @@ mailboxes =python
 mailboxes =python/python-Dev
 mailboxes =python/python-list
 mailboxes =ubuntu-user
-mailboxes =java-concurrency
 mailboxes =Self
 mailboxes =Self/Self-Note
+
+# Note that you can use `subscribe someml@someml.org' to tell mutt that you
+# have subscribed to a mailing list called `someml', so that nexttime you can
+# use `L' to easily reply to a mailing list, not a private recipent.
+# However, now that Gmail sort that out for me, let's be lazy...
 
 #############################################################
 # END mailboxes
