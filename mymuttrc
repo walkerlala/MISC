@@ -10,8 +10,7 @@ set imap_user = "ablacktshirt@gmail.com"
 set folder = "imaps://imap.gmail.com:993"
 set spoolfile = "+INBOX"
 set postponed="+[Gmail]/Drafts"
-#set record="+[Gmail]/Sent Mail"
-set record="+[Gmail]/Sent Mail"
+set record="+Sent"  #thunderbird use this, so let mutt use this too
 #set sort='threads'
 set header_cache=~/.mutt/cache/headers
 set message_cachedir=~/.mutt/cache/bodies
@@ -90,7 +89,7 @@ bind index gr group-reply
 #set index_format="%4C %Z %{%m/%d-%T} %-16.15F %s" # format of the browser
 set pager_index_lines=10
 
-# just like `scrolloff' in vim
+# scroll in the index view. just like `scrolloff' in vim
 set menu_scroll=yes
 set menu_context=5
 
@@ -351,7 +350,6 @@ mailboxes =perfbook
 mailboxes =mutt-user 
 mailboxes =[Gmail]
 mailboxes =[Gmail]/重要
-mailboxes =[Gmail]/Sent\ Mail
 mailboxes =[Gmail]/Drafts
 mailboxes =[Gmail]/已发邮件
 mailboxes =[Gmail]/垃圾邮件
@@ -361,7 +359,6 @@ mailboxes =[Gmail]/草稿
 mailboxes =[Gmail]/所有邮件
 #mailboxes =[Imap]   #you cannot explicitly state the `[Imap]' folder
 mailboxes =Sent
-#mailboxes =Drafts
 mailboxes =Archive
 mailboxes =Trash
 mailboxes =haiku
