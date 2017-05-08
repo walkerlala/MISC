@@ -531,9 +531,16 @@ nnoremap <CR> O<esc>
 "just type jk or kj to get back to normal mode 
 inoremap jk <esc>
 inoremap kj <esc>
+"make it even nicer
+inoremap hj <esc>
+inoremap jh <esc>
 "vnoremap jk <esc>  "DONOT map this, it is evil
 "vnoremap kj <esc>
 "vnoremap <Space><Space> <esc>
+
+" conditional virtual editing
+noremap <silent> <expr>j (v:count == 0?'gj':'j')
+noremap <silent> <expr>k (v:count == 0?'gk':'k')
 
 "check out operator-pending mapping
 "there is a pretty cool one. guess what it mean:
