@@ -366,6 +366,7 @@ mailboxes =Archive
 mailboxes =Trash
 mailboxes =java-concurrency
 mailboxes =haiku
+mailboxes =haiku/haiku-gsoc
 mailboxes =haiku/haiku-devel
 mailboxes =haiku/haiku-list
 mailboxes =haiku/haiku-web
