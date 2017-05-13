@@ -406,7 +406,15 @@ mailboxes =Self/Self-Note
 # END mailboxes
 ##############################################################
 
-#
+#####
+# address book alias
+####
+set alias_file=~/.mutt-alias
+source ~/.mutt-alias
+set query_command= "abook --mutt-query '%s'" 
+# you don't have to alias this, as this is the default alias
+#macro index,pager a "<pipe-message>abook --add-email-quiet<return>" "add the sender address to abook"
+
 #
 # HTML is the last option.
 alternative_order text/plain text/enriched text/html 
