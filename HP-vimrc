@@ -15,7 +15,6 @@ source $VIMRUNTIME/vimrc_example.vim
 
 syntax on
 
-
 "============== plugin configuration =============
 
 "use space for mapleader
@@ -94,42 +93,10 @@ map z/ <Plug>(incsearch-fuzzy-/)
 map z? <Plug>(incsearch-fuzzy-?)
 map zg/ <Plug>(incsearch-fuzzy-stay)
 
-"===== colorscheme kolor
-" Options must be set before the line `colorscheme kolor' in your vimrc.
-let g:kolor_italic=1                 " Enable italic. Default: 1
-let g:kolor_bold=1                   " Enable bold. Default: 1
-let g:kolor_underlined=0             " Enable underline. Default: 0
-let g:kolor_alternative_matchparen=0 " Gray 'MatchParen' color. Default: 0
-
 "===== clang_format configuration for C/C++
-let g:clang_format_location='clang-format-3.6'
-"let g:clang_format_style='"'.'Google'.'"'
-"hard-coded clang-format style. 
-"note that there must be at least a space after a semicolon(stupid clang_format)
-let g:clang_format_style='"'.'{BasedOnStyle: llvm,AllowAllParametersOfDeclarationOnNextLine: false,AllowShortFunctionsOnASingleLine: Empty,AlwaysBreakTemplateDeclarations: true,ColumnLimit: 0,IndentWidth: 4, NamespaceIndentation: All}'.'"'
-
-let g:clang_format_command_dict=[]
-if exists('g:clang_format_location')
-    cal add(clang_format_command_dict,clang_format_location)
-endif
-if exists('g:clang_format_style')
-    call add(clang_format_command_dict,'-style='.clang_format_style)
-endif
-let g:clang_format_command=join(clang_format_command_dict,' ')
-
-command! ClangFormat call s:RunClangFormat()  "change this function to a command
-function! s:RunClangFormat()
-    "expand(xxx) return the current filename with full path
-    let filename=expand("%:p")
-    "check whether it's a C/C++ file
-    if filename=~'\.cpp\|\.c\|\.cxx\|\.h\|\.hpp'
-        write
-        execute '$read !'.g:clang_format_command.' '.filename
-    endif
-endfunction
-
-" toggle clang format
-nnoremap <F3> Gmz:ClangFormat<CR>`zdgg
+" toggle clang format, with VIM's filter feature. See `http://vim.wikia.com/wiki/VimTip374'
+nnoremap <F3> :%!clang-format-3.6 -style="{BasedOnStyle: llvm,AllowAllParametersOfDeclarationOnNextLine: false,AllowShortFunctionsOnASingleLine: Empty,AlwaysBreakTemplateDeclarations: true,ColumnLimit: 0,IndentWidth: 4, NamespaceIndentation: All}"<CR><CR>
+vnoremap <F3> !clang-format-3.6 -style="{BasedOnStyle: llvm,AllowAllParametersOfDeclarationOnNextLine: false,AllowShortFunctionsOnASingleLine: Empty,AlwaysBreakTemplateDeclarations: true,ColumnLimit: 0,IndentWidth: 4, NamespaceIndentation: All}"<CR><CR>
 
 "===== Graphic undo configuration
 nnoremap <F5> :GundoToggle<CR>
@@ -263,7 +230,7 @@ endfunction
 
 "a cheat-sheet for my <F-*> mapping
 "nnoremap <F2> :echo bufferline#get_echo_string()
-"nnoremap <F3> Gmz:ClangFormat<CR>`zdgg #perform clang-format
+"nnoremap <F3> (use vim's filter        #perform clang-format
 "map <F4> :NERDTreeToggle<CR>           #open NERDTree buffer
 "nnoremap <F5> :GundoToggle<CR>         #open Graphic-Undo-Buffer
 "nnoremap <F6> :ccl<CR>                 #close the quickfix window
@@ -339,7 +306,7 @@ set numberwidth=4
 set tabstop=4
 
 "have to create these dir yourself first
-set undodir=~/.vim/tmp/undodir//
+set undodir=~/.vim/tmp/undodir/
 set backupdir=~/.vim/tmp/backup/
 
 set undofile "so that you can undo even if you have close the file
@@ -428,11 +395,13 @@ set cinoptions+=g0,:0,(0,c0,W4,w1,t0,Ls
       
 "format options
 set formatoptions=croqlj
-"the default is croql, the 'j' mean that when joining
-"lines, remove a command reader. Example:
-" Joinning     int j;   //first line
-"                       //second line
-" Become       int j;   //first line second line
+"Default is `croql'.
+"The 'j' means that when joining lines, remove a command reader. Example:
+" Joinning:
+"   int j;   //first line
+"            //second line
+" Get:
+"   int j;   //first line second line
 
 "turn off the stupid highlight search
 nnoremap <silent> ,n :nohls<CR>
@@ -457,8 +426,8 @@ set complete+=s,k,d
 " 'k' option stand for looking into a dict-file given in the dictionary option
 " 'd' option ... scan current and included file for defined name and macro
 
-"preview windows would show you the doc of the completing-func,which is unnecessary
-"if you want the preview windows, then use the 'preview' option. After that
+"preview windows would show you the doc of the completing-func,which is unnecessary.
+"If you want the preview windows, then use the 'preview' option. After that
 "you can close the preview option with 'au CompleteDone * pclose'
 set completeopt-=preview
 
@@ -474,10 +443,6 @@ nnoremap <leader><Tab> :b
 
 "close the quick fix window
 nnoremap <F6> :ccl<CR>
-
-" filename/directory name completion
-" seem like that SuperTab have done that..
-inoremap <C-f> <C-x><C-f>
 
 nnoremap L $
 nnoremap H ^
