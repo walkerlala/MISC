@@ -227,17 +227,6 @@ function! s:align()
     endif
 endfunction
 
-
-"a cheat-sheet for my <F-*> mapping
-"nnoremap <F2> :echo bufferline#get_echo_string()
-"nnoremap <F3> (use vim's filter        #perform clang-format
-"map <F4> :NERDTreeToggle<CR>           #open NERDTree buffer
-"nnoremap <F5> :GundoToggle<CR>         #open Graphic-Undo-Buffer
-"nnoremap <F6> :ccl<CR>                 #close the quickfix window
-"map <F8> :w<CR>:SyntasticCheck<CR>     #perform Syntatic check
-"map <F9> :SyntasticToggleMode<CR>      #Syntatic-Checker negative mode
-"nnoremap <F10> :TagbarToggle<CR>
-
 "============== end plugin configuration =================
 
 
@@ -257,6 +246,28 @@ endif
 if $COLORTERM=='gnome-terminal'
     set t_Co=256
 endif
+
+" flip `wrap/nowrap'
+command! FlipWrap call s:RunFlipWrap()
+function! s:RunFlipWrap()
+    if &wrap == 1
+        set nowrap
+    else
+        set wrap
+    endif
+endfunction
+nnoremap <F1> :FlipWrap<CR>
+
+" flip `hlsearch/nohlsearch'
+command! FlipHlsearch call s:RunFlipHlsearch()
+function! s:RunFlipHlsearch()
+    if &hlsearch == 1
+        set nohlsearch
+    else
+        set hlsearch
+    endif
+endfunction
+nnoremap <silent> ,n :FlipHlsearch<CR>
 
 set laststatus=2
 
@@ -402,9 +413,6 @@ set formatoptions=croqlj
 "            //second line
 " Get:
 "   int j;   //first line second line
-
-"turn off the stupid highlight search
-nnoremap <silent> ,n :nohls<CR>
 
 "cd to the directory containing the file in the buffer
 nmap <silent> ,cd :lcd %:h<CR>
@@ -658,47 +666,53 @@ autocmd FileType ruby    let g:indentLine_enabled=1
 
 "vimscript: COMMENT_SETTINGs for some languages{{{
 augroup comment_setting
-    "used to comment out a line with with the corresponding style
-    autocmd Filetype cpp nnoremap        <M-->  I//<Esc>j
-    autocmd Filetype java nnoremap       <M-->  I//<esc>j
-    autocmd Filetype javascript nnoremap <M-->  I//<Esc>j
-    autocmd Filetype c nnoremap          <M-->  I/*<esc>A*/<esc>j
-    autocmd Filetype python nnoremap     <M-->  I#<esc>j
-    autocmd Filetype vim nnoremap        <M-->  I"<esc>j
-    autocmd Filetype sh nnoremap         <M-->  I#<esc>j
-    autocmd Filetype perl nnoremap       <M-->  I#<esc>j
-    autocmd Filetype css nnoremap        <M-->  I/*<esc>A*/<esc>j
-    autocmd Filetype sml nnoremap        <M-->  I(*<esc>A*)<esc>j
+    set nohlsearch
+    " used to comment out a line with with the corresponding style
+    " map it for normal, insert and virtual mode
+    autocmd Filetype cpp noremap        <C-j>  :s/\(\s*\)\(.*\)/\1\/\/ \2/<CR>j
+    autocmd Filetype java noremap       <C-j>  :s/\(\s*\)\(.*\)/\1\/\/ \2/<CR>j
+    autocmd Filetype javascript noremap <C-j>  :s/\(\s*\)\(.*\)/\1\/\/ \2/<CR>j
+    autocmd Filetype c noremap          <C-j>  :s/\(\s*\)\(.*\)/\1\/* \2 *\//<CR>j
+    autocmd Filetype python noremap     <C-j>  :s/\(\s*\)\(.*\)/\1# \2/<CR>j
+    autocmd Filetype vim noremap        <C-j>  :s/\(\s*\)\(.*\)/\1" \2/<CR>j
+    autocmd Filetype vim noremap        <C-j>  :s/\(\s*\)\(.*\)/\1" \2/<CR>j
+    autocmd Filetype sh noremap         <C-j>  :s/\(\s*\)\(.*\)/\1# \2/<CR>j
+    autocmd Filetype perl noremap       <C-j>  :s/\(\s*\)\(.*\)/\1# \2/<CR>j
+    autocmd Filetype css noremap        <C-j>  :s/\(\s*\)\(.*\)/\1\/* \2 *\//<CR>j
+    autocmd Filetype sml noremap        <C-j>  :s/\(\s*\)\(.*\)/\1(* \2 *)/<CR>j
 
     "accordingly, to cancel the comment:
-    autocmd Filetype cpp nnoremap        <M-=> ^xx<Esc>j
-    autocmd Filetype java nnoremap       <M-=> ^xx<esc>j
-    autocmd Filetype javascript nnoremap <M-=> ^xx<Esc>j
-    autocmd Filetype c nnoremap          <M-=> ^xx<esc>$xx<esc>j
-    autocmd Filetype python nnoremap     <M-=> ^x<esc>j
-    autocmd Filetype vim nnoremap        <M-=> ^x<esc>j
-    autocmd Filetype sh nnoremap         <M-=> ^x<esc>j
-    autocmd Filetype perl nnoremap       <M-=> ^x<esc>j
-    autocmd Filetype css nnoremap        <M-=> ^xx<esc>$xx<esc>j
-    autocmd Filetype sml nnoremap        <M-=> ^xx<esc>$xx<esc>j
+    autocmd Filetype cpp noremap        <C-k> :s/\(\s*\)\/\/ \?\(.*\)/\1\2/<CR>k
+    autocmd Filetype java noremap       <C-k> :s/\(\s*\)\/\/ \?\(.*\)/\1\2/<CR>k
+    autocmd Filetype javascript noremap <C-k> :s/\(\s*\)\/\/ \?\(.*\)/\1\2/<CR>k
+    autocmd Filetype c noremap          <C-k> :s/\(\s*\)\/\* \?\(.*\) \*\//\1\2/<CR>k
+    autocmd Filetype python noremap     <C-k> :s/\(\s*\)# \?\(.*\)/\1\2/<CR>k
+    autocmd Filetype vim noremap        <C-k> :s/\(\s*\)" \?\(.*\)/\1\2/<CR>k
+    autocmd Filetype sh noremap         <C-k> :s/\(\s*\)# \?\(.*\)/\1\2/<CR>k
+    autocmd Filetype perl noremap       <C-k> :s/\(\s*\)# \?\(.*\)/\1\2/<CR>k
+    autocmd Filetype css noremap        <C-k> :s/\(\s*\)\/\* \?\(.*\) \?\*\//\1\2/<CR>k
+    autocmd Filetype sml noremap        <C-k> :s/\(\s*\)(\* \?\(.*\) \?\*)/\1\2/<CR>k
 
     "also note that some key-mapping just don't work when you use
-    "vim in terminal, like the <M--> one
+    "vim in terminal, like <M-->
 
     "to create a traditional c-style comment above the current line
     autocmd Filetype c nnoremap <S-CR>   O/* */<Esc>hi
+    autocmd Filetype c inoremap <S-CR>   O/* */<Esc>hi
     "add traditional c-style comment to the right of current line
     autocmd Filetype c nnoremap <C-l>    $a   /* */<esc>hha
     autocmd Filetype c inoremap <C-l>    <esc>$a   /* */<esc>hha
 
     " add a comment above the current line(note the tailing whitespace)
     autocmd Filetype cpp nnoremap <S-CR> O// 
-    "add traditional c-style comment to the right of current line
+    autocmd Filetype cpp inoremap <S-CR> O// 
+    " add traditional c-style comment to the right of current line
     autocmd Filetype cpp nnoremap <C-l>  $a   /* */<esc>hha
     autocmd Filetype cpp inoremap <C-l>  <esc>$a   /* */<esc>hha
 
     autocmd Filetype java nnoremap <S-CR> O// 
-    "add traditional c-style comment to the right of current line
+    autocmd Filetype java inoremap <S-CR> O// 
+    " add traditional c-style comment to the right of current line
     autocmd Filetype java nnoremap <C-l>  $a   /* */<esc>hha
     autocmd Filetype java  inoremap <C-l> <esc>$a   /* */<esc>hha
 
@@ -710,8 +724,29 @@ augroup comment_setting
     autocmd Filetype perl nnoremap   <S-CR> O# 
     autocmd Filetype css nnoremap    <S-CR> O/* */<Esc>hi
     autocmd Filetype sml nnoremap    <S-CR> O(* *)<Esc>hi
+    " insert mode
+    autocmd Filetype java inoremap   <S-CR> O// 
+    autocmd Filetype vim inoremap    <S-CR> O" 
+    autocmd Filetype sh inoremap     <S-CR> O# 
+    autocmd Filetype python inoremap <S-CR> O# 
+    autocmd Filetype perl inoremap   <S-CR> O# 
+    autocmd Filetype css inoremap    <S-CR> O/* */<Esc>hi
+    autocmd Filetype sml inoremap    <S-CR> O(* *)<Esc>hi
 
 augroup END
 "}}}
+
+"a cheat-sheet for my <F-*> mapping
+" nnoremap <F1> :FlipWrap
+" nnoremap <F2> :echo bufferline#get_echo_string()
+" nnoremap <F3> (use vim's filter        #perform clang-format
+" map      <F4> :NERDTreeToggle<CR>           #open NERDTree buffer
+" nnoremap <F5> :GundoToggle<CR>         #open Graphic-Undo-Buffer
+" nnoremap <F6> :ccl<CR>                 #close the quickfix window
+" nnoremap <F7> 
+" map      <F8> :w<CR>:SyntasticCheck<CR>     #perform Syntatic check
+" map      <F9> :SyntasticToggleMode<CR>      #Syntatic-Checker negative mode
+" nnoremap <F10> :TagbarToggle<CR>
+
 
 "set tags=/path/to/tags
