@@ -736,6 +736,10 @@ augroup comment_setting
 augroup END
 "}}}
 
+" mutt email configuration
+autocmd BufNewFile,BufRead /tmp/mutt* set lines=0 columns=0
+autocmd BufNewFile,BufRead ~/tmp/mutt* set lines=0 columns=0
+
 "a cheat-sheet for my <F-*> mapping
 " nnoremap <F1> :FlipWrap
 " nnoremap <F2> :echo bufferline#get_echo_string()
