@@ -1,2 +1,2 @@
 # MISC
-misc file/script
+A collection of code snippets/note/essays
