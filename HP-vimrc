@@ -276,7 +276,7 @@ set laststatus=2
 set guifont=Source\ Code\ Pro\ Medium\ Italic\ 11.5
 
 set number
-"set relativenumber
+set relativenumber
 
 "avoid the annoying `write before xxx' when hide buffer
 set hidden
@@ -345,7 +345,7 @@ set cmdheight=2
 "don't break a line
 set nolinebreak
 
-"use space instead of tabs
+" this would automatically replace tab with space
 set expandtab
 
 "this affect the behavior of 'jk' in insert mode
@@ -417,16 +417,19 @@ set formatoptions=croqlj
 "cd to the directory containing the file in the buffer
 nmap <silent> ,cd :lcd %:h<CR>
 
-"this option should 'squezz' 'headroom' space for the gui-vim
-"However, in ubuntu, there is a still annoying head-tool-bar there
-set guiheadroom=-100
+" Note that these only affect gvim. See the doc
+if has('gui_running')
+    "this option should 'squezz' 'headroom' space for the gui-vim
+    "However, in ubuntu, there is a still annoying head-tool-bar there
+    set guiheadroom=-100
 
-"equal to :winsize {width} {height}
-set lines=39
-set columns=84
-
-"the startup windows position
-winpos  683 30
+    " equal to :winsize {width} {height}
+    set lines=39
+    set columns=84
+   
+    "the startup windows position
+    winpos  683 30
+endif
 
 "set file for keyword-completion
 set complete+=s,k,d
@@ -466,8 +469,8 @@ onoremap <S-Tab> <C-C><C-W>w
 no <left> <Nop>
 no <right> <Nop>
 no <down> ddp
-no <up> ddkP      
 "note that this is a uppercase p
+no <up> ddkP      
 ino <down> <Nop>
 ino <up> <Nop>
 ino <left> <Nop>
@@ -476,9 +479,6 @@ vno <down> <Nop>
 vno <up> <Nop>
 vno <left> <Nop>
 vno <right> <Nop>
-
-" enlarge the current entire gvim windows(not so working...)
-nnoremap <C-\> <Esc>:set columns+=3 <bar> set lines+=3<CR>
 
 "this is used to enlarge the current buffer window you are in
 nnoremap <M-[> <C-w>2<
@@ -737,8 +737,8 @@ augroup END
 "}}}
 
 " mutt email configuration
-autocmd BufNewFile,BufRead /tmp/mutt* set lines=0 columns=0
-autocmd BufNewFile,BufRead ~/tmp/mutt* set lines=0 columns=0
+autocmd BufNewFile,BufRead /tmp/mutt* set textwidth=78
+autocmd BufNewFile,BufRead /tmp/mutt* vnoremap <C-f> :!/home/walkerlala/software/format_email.py <CR><CR>
 
 "a cheat-sheet for my <F-*> mapping
 " nnoremap <F1> :FlipWrap
@@ -751,6 +751,5 @@ autocmd BufNewFile,BufRead ~/tmp/mutt* set lines=0 columns=0
 " map      <F8> :w<CR>:SyntasticCheck<CR>     #perform Syntatic check
 " map      <F9> :SyntasticToggleMode<CR>      #Syntatic-Checker negative mode
 " nnoremap <F10> :TagbarToggle<CR>
-
 
 "set tags=/path/to/tags
