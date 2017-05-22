@@ -50,7 +50,7 @@ for word in words:
 
     if all_space(word):
         if not indented:
-            if result[len(result)-1] != "\n":
+            if len(result) and result[len(result)-1] != "\n":
                 result.append("\n")
             current_len = 0
             current_len = len(word)
