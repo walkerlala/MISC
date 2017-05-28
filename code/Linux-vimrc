@@ -29,12 +29,22 @@ autocmd FileType *
     \    call SuperTabChain(&omnifunc,"<c-p") |
     \endif
 
-"=== easymotion mapping
+"=== Easymotion mapping
 
-"easymotion's key
+"       Easymotion's key
 "Note that easymotion use the last chars(from last to first)
 "for grouping, so that you would like some convenient ones
 let g:EasyMotion_keys='abcdefghijklmnopqrstuvwxyzafj'
+
+"       Easymotion color configuration
+" one char target
+hi link EasyMotionTarget ErrorMsg
+" hi link EasyMotionShade  Comment
+ 
+hi link EasyMotionTarget2First Question
+hi link EasyMotionTarget2Second Question
+ 
+" hi link EasyMotionMoveHL Search
 
 map <Leader> <Plug>(easymotion-prefix)
 
@@ -173,9 +183,6 @@ let g:clang_conceal_snippets=2
 "-I.
 "or you can use this: g:clang_auto_user_options='-I/usr/lib/xxxx'
 
-"====== mapping for tagbar
-nnoremap <F10> :TagbarToggle<CR>
-
 "====== jedi-vim configuration
 " g:jedi#goto_command - go to definition or assignment(Default <leader>d)
 let g:jedi#show_call_signatures=1  
@@ -196,19 +203,8 @@ let g:indentLine_enabled=0 "default not enabled, use :IndentLines... to enable
 "====== bufferline configuration
 nnoremap <F2> :echo bufferline#get_echo_string()<CR>
 
-"====== Tabular configuration
-if exists (":Tabularize")
-    nmap <leader>= :Tabularize /=<CR>
-    vmap <leader>= :Tabularize /=<CR>
-    nmap <leader>: :Tabularize /:\zs<CR>
-    vmap <leader>: :Tabularize /:\zs<CR>
-endif
-
-"====== Larget File handling
-let g:LargeFile=50
-" use :Unlarge to undo the LargeFile setting
-" use :Large   to do it
-" use :Large!  to force 
+"====== tagbar configuration
+nnoremap <F10> :TagbarToggle<CR>
 
 "====== Rainbow highlighting
 " just use :Rainbow, or see the help file
@@ -237,6 +233,23 @@ if has('gui_running')
     colorscheme default
     "dont set cursorline in terminal, it suck
     set cursorline
+    
+    "this option should 'squezz' 'headroom' space for the gui-vim
+    "However, in ubuntu, there is a still annoying head-tool-bar there
+    set guiheadroom=-100
+
+    " equal to :winsize {width} {height}
+    set lines=39
+    set columns=84
+   
+    "the startup windows position
+    winpos  683 30
+    
+    "this is used to enlarge the current buffer window you are in
+    nnoremap <M-[> <C-w>2<
+    nnoremap <M-]> <C-w>2>
+    nnoremap <M-;> <C-w>2+
+    nnoremap <M-'> <C-w>2-
 else
     "colorscheme kolor
     colorscheme default
@@ -248,7 +261,6 @@ if $COLORTERM=='gnome-terminal'
 endif
 
 " flip `wrap/nowrap'
-command! FlipWrap call s:RunFlipWrap()
 function! s:RunFlipWrap()
     if &wrap == 1
         set nowrap
@@ -256,10 +268,10 @@ function! s:RunFlipWrap()
         set wrap
     endif
 endfunction
+command! FlipWrap call s:RunFlipWrap()
 nnoremap <F1> :FlipWrap<CR>
 
 " flip `hlsearch/nohlsearch'
-command! FlipHlsearch call s:RunFlipHlsearch()
 function! s:RunFlipHlsearch()
     if &hlsearch == 1
         set nohlsearch
@@ -267,6 +279,7 @@ function! s:RunFlipHlsearch()
         set hlsearch
     endif
 endfunction
+command! FlipHlsearch call s:RunFlipHlsearch()
 nnoremap <silent> ,n :FlipHlsearch<CR>
 
 set laststatus=2
@@ -417,20 +430,6 @@ set formatoptions=croqlj
 "cd to the directory containing the file in the buffer
 nmap <silent> ,cd :lcd %:h<CR>
 
-" Note that these only affect gvim. See the doc
-if has('gui_running')
-    "this option should 'squezz' 'headroom' space for the gui-vim
-    "However, in ubuntu, there is a still annoying head-tool-bar there
-    set guiheadroom=-100
-
-    " equal to :winsize {width} {height}
-    set lines=39
-    set columns=84
-   
-    "the startup windows position
-    winpos  683 30
-endif
-
 "set file for keyword-completion
 set complete+=s,k,d
 " 's' option stand for looking into a thesaurus-file given in the saurus option
@@ -480,12 +479,6 @@ vno <up> <Nop>
 vno <left> <Nop>
 vno <right> <Nop>
 
-"this is used to enlarge the current buffer window you are in
-nnoremap <M-[> <C-w>2<
-nnoremap <M-]> <C-w>2>
-nnoremap <M-;> <C-w>2+
-nnoremap <M-'> <C-w>2-
-
 "make it ease to edit and source the .vimrc file
 nnoremap ev :vsplit $MYVIMRC<CR>
 nnoremap ec :source $MYVIMRC<CR>
@@ -501,16 +494,14 @@ inoremap <c-c> <esc>zza
 "to insert newline while remaining in normal mode
 nnoremap <CR> O<esc>
 
-"just type jk or kj to get back to normal mode 
+" just type jk or kj to get back to normal mode 
 inoremap jk <esc>
 inoremap kj <esc>
-"make it even nicer
+" make it even nicer
 inoremap hj <esc>
 inoremap jh <esc>
 "vnoremap jk <esc>  "DONOT map this, it is evil
 "vnoremap kj <esc>
-"vnoremap <Space><Space> <esc>
-
 " conditional virtual editing
 noremap <silent> <expr>j (v:count == 0?'gj':'j')
 noremap <silent> <expr>k (v:count == 0?'gk':'k')
@@ -521,12 +512,19 @@ noremap <silent> <expr>k (v:count == 0?'gk':'k')
 "then press 'db'. It will delete till the first 'pattern' found
 "turn out that vim's operator-mapping tech is super powerful!!!!
 
-"show vim command history
-nnoremap <C-h> q:
-
 "originally, g<Ctrl-]> would jump to definition
 "             <Ctrl-]> would jump to declaration
-nnoremap <C-[> g<C-]>
+" ==== CAVEAT!!!! THIS IS EVIL!!!! ====
+"       Once defined, this will make VIM search for tag file on startup.
+"       If VIM fail to find the tag file, it will warn about
+"           E433: No Tag File
+"           E426: tag not found, xxx
+"       where ``xxx'' is the current identifier under the cursor.
+"       Worse, it will pre-push a `c' key for you, which means that if you
+"       push j or k after starting up VIM, you will delete a line....
+"       Installing the plugin ``tagbar.vim'' helps a little bit, but not under 
+"       all circumstance.
+" nnoremap <C-[> g<C-]>
 
 "textwidth for all filetype
 " textwidth 0 means no textwidth(arbitarily long)
@@ -540,6 +538,9 @@ nnoremap n N
 nnoremap <space>a za
 "zi to swich folding on and off
 "zR open all fold, zM close all fold
+
+noremap <M-u> <C-w>p<C-u><C-w>p
+noremap <M-u> <C-w>p<C-d><C-w>p
 
 "vimscript:ABBREVIATIONS{{{
 iabbr adn and
@@ -593,7 +594,18 @@ endfunction
 
 "====== simple configuration for html
 let g:html_indent_inctags="html,body,head,tbody"
-
+function! s:RunHtmlPrettify()
+    if &ft != "html"
+        echo "not a html file"
+        return 
+    endif
+    silent! exec "%s/<[^>]*>/\r&\r/g"
+    " these two line cannot be re-ordered, otherwise the g/.. command would have
+    " no time to execute. Bug report:
+    exec "normal gg=G"
+    silent! exec "g/^\s*$/d"
+endfunction
+command! HtmlPrettify call s:RunHtmlPrettify()
 
 "vimscript: FOLDING setting {{{
 "pressing za to fold this and unfold the folder
@@ -667,8 +679,9 @@ autocmd FileType ruby    let g:indentLine_enabled=1
 "vimscript: COMMENT_SETTINGs for some languages{{{
 augroup comment_setting
     set nohlsearch
-    " used to comment out a line with with the corresponding style
-    " map it for normal, insert and virtual mode
+    " Used to comment out a line with the corresponding style
+    " With the help of vim's filtering feature
+    " Map it for normal, insert and virtual modes
     autocmd Filetype cpp noremap        <C-j>  :s/\(\s*\)\(.*\)/\1\/\/ \2/<CR>j
     autocmd Filetype java noremap       <C-j>  :s/\(\s*\)\(.*\)/\1\/\/ \2/<CR>j
     autocmd Filetype javascript noremap <C-j>  :s/\(\s*\)\(.*\)/\1\/\/ \2/<CR>j
@@ -740,11 +753,11 @@ augroup END
 autocmd BufNewFile,BufRead /tmp/mutt* set textwidth=78
 autocmd BufNewFile,BufRead /tmp/mutt* vnoremap <C-f> :!/home/walkerlala/software/format_email.py <CR><CR>
 
-"a cheat-sheet for my <F-*> mapping
+"a cheat-sheet for my <F*> mapping
 " nnoremap <F1> :FlipWrap
 " nnoremap <F2> :echo bufferline#get_echo_string()
 " nnoremap <F3> (use vim's filter        #perform clang-format
-" map      <F4> :NERDTreeToggle<CR>           #open NERDTree buffer
+" map      <F4> :NERDTreeToggle<CR>      #open NERDTree buffer
 " nnoremap <F5> :GundoToggle<CR>         #open Graphic-Undo-Buffer
 " nnoremap <F6> :ccl<CR>                 #close the quickfix window
 " nnoremap <F7> 
