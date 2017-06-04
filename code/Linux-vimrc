@@ -2,6 +2,55 @@
 set nocompatible
 set encoding=utf-8
 
+if has('win32')
+    source $VIMRUNTIME/mswin.vim
+    source $VIMRUNTIME/vimrc_example.vim
+    behave mswin
+    let $VIMFILES='$VIM/vimfiles'
+    let $MYVIMRC='$VIM/_vimrc'
+else
+    let $VIMFILES='$HOME/.vim'
+    let $MYVIMRC='$HOME/.vimrc'
+endif
+
+" some VIM black magic:
+" :%TOhtml would turn all the text in the current buffer
+" into html html file. When you open that html file, it
+" loo exactly the same as in your vim
+
+if has('win32')
+    set diffexpr=MyDiff()
+    "the ! is used to force overwriting the previous function or command
+    function! MyDiff()
+      let opt = '-a --binary '
+      if &diffopt =~ 'icase' | let opt = opt . '-i ' | endif
+      if &diffopt =~ 'iwhite' | let opt = opt . '-b ' | endif
+      let arg1 = v:fname_in
+      if arg1 =~ ' ' | let arg1 = '"' . arg1 . '"' | endif
+      let arg2 = v:fname_new
+      if arg2 =~ ' ' | let arg2 = '"' . arg2 . '"' | endif
+      let arg3 = v:fname_out
+      if arg3 =~ ' ' | let arg3 = '"' . arg3 . '"' | endif
+      if $VIMRUNTIME =~ ' '
+        if &sh =~ '\<cmd'
+          if empty(&shellxquote)
+            let l:shxq_sav = ''
+            set shellxquote&
+          endif
+          let cmd = '"' . $VIMRUNTIME . '\diff"'
+        else
+          let cmd = substitute($VIMRUNTIME, ' ', '" ', '') . '\diff"'
+        endif
+      else
+        let cmd = $VIMRUNTIME . '\diff'
+      endif
+      silent execute '!' . cmd . ' ' . opt . arg1 . ' ' . arg2 . ' > ' . arg3
+      if exists('l:shxq_sav')
+        let &shellxquote=l:shxq_sav
+      endif
+    endfunction
+endif
+
 filetype off
 
 "pathogen plugin-manager
@@ -229,8 +278,12 @@ endfunction
 "============== vim builtin configuration ==============
 set background=dark
 if has('gui_running')
-    "colorscheme solarized
-    colorscheme default
+    if has('win32')
+        colorscheme solarized
+    else
+        colorscheme default
+    endif
+
     "dont set cursorline in terminal, it suck
     set cursorline
     
@@ -286,10 +339,14 @@ set laststatus=2
 
 "use set guifont=* to bring up the font selector
 "set guifont=Monaco\ Italic\ 10
-set guifont=Source\ Code\ Pro\ Medium\ Italic\ 11.5
+if !has('win32')
+    set guifont=Source\ Code\ Pro\ Medium\ Italic\ 11.5
+else
+    set guifont=Consolas:h12
+endif
 
 set number
-set relativenumber
+" set relativenumber
 
 "avoid the annoying `write before xxx' when hide buffer
 set hidden
@@ -329,9 +386,14 @@ set shiftwidth=4
 set numberwidth=4
 set tabstop=4
 
-"have to create these dir yourself first
-set undodir=~/.vim/tmp/undodir/
-set backupdir=~/.vim/tmp/backup/
+" have to create these dir yourself first
+if !has('win32')
+    set undodir=~/.vim/tmp/undodir/
+    set backupdir=~/.vim/tmp/backup/
+else
+    set undodir=$VIM/vimfiles/tmp/undodir/
+    set backupdir=$VIM/vimfiles/tmp/backup/
+endif
 
 set undofile "so that you can undo even if you have close the file
 set undolevels=1000
@@ -444,6 +506,9 @@ set completeopt-=preview
 " gq  is the operator to format text. Universally, select a block of text and
 " then press  gq  , and then vim will handle the format for you
 
+" allow project specific .vimrc configuration
+set exrc
+
 "switch between tags
 nnoremap <C-TAB> :tabnext<CR>
 
@@ -530,17 +595,20 @@ noremap <silent> <expr>k (v:count == 0?'gk':'k')
 " textwidth 0 means no textwidth(arbitarily long)
 set textwidth=80
 
-"when searching, I want to type n to incrementally search
-"but vim does the opposite. reverse it
-nnoremap n N
-
 "folding mapping
 nnoremap <space>a za
 "zi to swich folding on and off
 "zR open all fold, zM close all fold
 
+" For when you forget to sudo.. Really write the file
+cmap w!! w !sudo tee % >/dev/null
+cmap xx !
+
+" vertical split a buffer
+nnoremap <C-b> :vert sb
+
 noremap <M-u> <C-w>p<C-u><C-w>p
-noremap <M-u> <C-w>p<C-d><C-w>p
+noremap <M-d> <C-w>p<C-d><C-w>p
 
 "vimscript:ABBREVIATIONS{{{
 iabbr adn and
@@ -710,24 +778,24 @@ augroup comment_setting
     "vim in terminal, like <M-->
 
     "to create a traditional c-style comment above the current line
-    autocmd Filetype c nnoremap <S-CR>   O/* */<Esc>hi
-    autocmd Filetype c inoremap <S-CR>   O/* */<Esc>hi
+    autocmd Filetype c nnoremap <S-CR>   O/*  */<Esc>hhi
+    autocmd Filetype c inoremap <S-CR>   O/*  */<Esc>hhi
     "add traditional c-style comment to the right of current line
-    autocmd Filetype c nnoremap <C-l>    $a   /* */<esc>hha
-    autocmd Filetype c inoremap <C-l>    <esc>$a   /* */<esc>hha
+    autocmd Filetype c nnoremap <C-l>    $a   /*  */<esc>hhha
+    autocmd Filetype c inoremap <C-l>    <esc>$a   /*  */<esc>hhha
 
     " add a comment above the current line(note the tailing whitespace)
     autocmd Filetype cpp nnoremap <S-CR> O// 
     autocmd Filetype cpp inoremap <S-CR> O// 
     " add traditional c-style comment to the right of current line
-    autocmd Filetype cpp nnoremap <C-l>  $a   /* */<esc>hha
-    autocmd Filetype cpp inoremap <C-l>  <esc>$a   /* */<esc>hha
+    autocmd Filetype cpp nnoremap <C-l>  $a   // 
+    autocmd Filetype cpp inoremap <C-l>  <esc>$a   // 
 
     autocmd Filetype java nnoremap <S-CR> O// 
     autocmd Filetype java inoremap <S-CR> O// 
     " add traditional c-style comment to the right of current line
-    autocmd Filetype java nnoremap <C-l>  $a   /* */<esc>hha
-    autocmd Filetype java  inoremap <C-l> <esc>$a   /* */<esc>hha
+    autocmd Filetype java nnoremap <C-l>  $a   // 
+    autocmd Filetype java  inoremap <C-l> <esc>$a   // 
 
     " add a comment above the current line(note the tailing whitespace)
     autocmd Filetype java nnoremap   <S-CR> O// 
@@ -735,16 +803,16 @@ augroup comment_setting
     autocmd Filetype sh nnoremap     <S-CR> O# 
     autocmd Filetype python nnoremap <S-CR> O# 
     autocmd Filetype perl nnoremap   <S-CR> O# 
-    autocmd Filetype css nnoremap    <S-CR> O/* */<Esc>hi
-    autocmd Filetype sml nnoremap    <S-CR> O(* *)<Esc>hi
+    autocmd Filetype css nnoremap    <S-CR> O/*  */<Esc>hhi
+    autocmd Filetype sml nnoremap    <S-CR> O(*  *)<Esc>hhi
     " insert mode
     autocmd Filetype java inoremap   <S-CR> O// 
     autocmd Filetype vim inoremap    <S-CR> O" 
     autocmd Filetype sh inoremap     <S-CR> O# 
     autocmd Filetype python inoremap <S-CR> O# 
     autocmd Filetype perl inoremap   <S-CR> O# 
-    autocmd Filetype css inoremap    <S-CR> O/* */<Esc>hi
-    autocmd Filetype sml inoremap    <S-CR> O(* *)<Esc>hi
+    autocmd Filetype css inoremap    <S-CR> O/*  */<Esc>hhi
+    autocmd Filetype sml inoremap    <S-CR> O(*  *)<Esc>hhi
 
 augroup END
 "}}}
@@ -765,4 +833,16 @@ autocmd BufNewFile,BufRead /tmp/mutt* vnoremap <C-f> :!/home/walkerlala/software
 " map      <F9> :SyntasticToggleMode<CR>      #Syntatic-Checker negative mode
 " nnoremap <F10> :TagbarToggle<CR>
 
-"set tags=/path/to/tags
+" ===== because gnome-terminal cannot accept F* keys, make a little tweak
+command! GnomeTerminalF1 FlipWrap
+command! GnomeTerminalF2 echo bufferline#get_echo_string()
+command! GnomeTerminalF3 %!clang-format-3.6 -style="{BasedOnStyle: llvm,AllowAllParametersOfDeclarationOnNextLine: false,AllowShortFunctionsOnASingleLine: Empty,AlwaysBreakTemplateDeclarations: true,ColumnLimit: 0,IndentWidth: 4, NamespaceIndentation: All}"
+command! GnomeTerminalF4 NERDTreeToggle
+command! GnomeTerminalF5 GundoToggle
+command! GnomeTerminalF6 ccl
+" command! GnomeTerminalF7
+command! GnomeTerminalF8 SyntasticCheck
+command! GnomeTerminalF9 SyntasticToggleMode
+command! GnomeTerminalF10 TagbarToggle
+
+set tags="./tags"

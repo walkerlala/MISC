@@ -1,93 +1,3 @@
-"|buffer-variable|    b:	  Local to the current buffer.
-"|window-variable|    w:	  Local to the current window.
-"|tabpage-variable|   t:	  Local to the current tab page.
-"|global-variable|    g:	  Global.
-"|local-variable|     l:	  Local to a function.
-"|script-variable|    s:	  Local to a |:source|'ed Vim script.
-"|function-argument|  a:	  Function argument (only inside a function).
-"|vim-variable|       v:	  Global, predefined by Vim.
-"Sorting lines ~
-"
-"This example sorts lines with a specific compare function. >
-"
-  ":func SortBuffer()
-  ":  let lines = getline(1, '$')    GET LINE FROM THE BUFFER
-  ":  call sort(lines, function("Strcmp"))
-  ":  call setline(1, lines)
-  ":endfunction
-"
-"As a one-liner: >
-  ":call setline(1, sort(getline(1, '$'), function("Strcmp")))
-"
-"
-"scanf() replacement ~   THIS ~ AT THE END IS JUST A MARK
-							"*sscanf*
-"There is no sscanf() function in Vim.  If you need to extract parts from a
-"line, you can use matchstr() and substitute() to do it.  This example shows
-"how to get the file name, line number and column number out of a line like
-""foobar.txt, 123, 45". >
-   ":" Set up the match bit
-   ":let mx='\(\f\+\),\s*\(\d\+\),\s*\(\d\+\)'
-   ":"get the part matching the whole expression
-   ":let l = matchstr(line, mx)
-   ":"get each item out of the match
-   ":let file = substitute(l, mx, '\1', '')
-   ":let lnum = substitute(l, mx, '\2', '')
-   ":let col = substitute(l, mx, '\3', '')
-"
-"The input is in the variable "line", the results in the variables "file",
-""lnum" and "col". (idea from Michael Geddes)
-
-"getting the scriptnames in a Dictionary ~
-						"*scriptnames-dictionary*
-"The |:scriptnames| command can be used to get a list of all script files that
-"have been sourced.  There is no equivalent function or variable for this
-"(because it's rarely needed).  In case you need to manipulate the list this
-"code can be used: >
-    "" Get the output of ":scriptnames" in the scriptnames_output variable.
-    "let scriptnames_output = ''
-    "redir => scriptnames_output
-    "silent scriptnames
-    "redir END
-    "
-    "
-    "" Split the output into lines and parse each line.	Add an entry to the
-    "" "scripts" dictionary.
-    "let scripts = {}
-    "for line in split(scriptnames_output, "\n")
-      "" Only do non-blank lines.
-      "if line =~ '\S'
-	"" Get the first number in the line.
-	"let nr = matchstr(line, '\d\+')
-	"" Get the file name, remove the script number " 123: ".
-	"let name = substitute(line, '.\+:\s*', '', '')
-	"" Add an item to the Dictionary
-	"let scripts[nr] = name
-      "endif
-    "endfor
-    "unlet scriptnames_output
-
-"the 
-"       redir
-"       ...
-"       redir END
-"can get the message from the ex command window out. Helpfule!!!
-
-" 'gq]/' would format to the next '/'
-" (cross-line)
-" this is typically for c-comment
-" 'd]/' would delete to the nexe '/'
-" 'dt/' is not cross line, but 'd]/' is
-
-"to have the autoread effect you want, read this post:
-"http://vi.stackexchange.com/questions/2702/how-can-i-make-vim-autoread-a-file-while-it-doesnt-have-focus
-"
-"matching every parenthesis with rainbow color, especially useful for Lisp
-"http://www.vim.org/scripts/script.php?script_id=1230
-"
-"see the rst format when defining your own format
-
-"this should be first, because it change other options as a side effect
 "this must be first, because it change other options as a side effect
 set nocompatible
 set encoding=utf-8
@@ -108,36 +18,38 @@ endif
 " into html html file. When you open that html file, it
 " loo exactly the same as in your vim
 
-set diffexpr=MyDiff()
-"the ! is used to force overwriting the previous function or command
-function! MyDiff()
-  let opt = '-a --binary '
-  if &diffopt =~ 'icase' | let opt = opt . '-i ' | endif
-  if &diffopt =~ 'iwhite' | let opt = opt . '-b ' | endif
-  let arg1 = v:fname_in
-  if arg1 =~ ' ' | let arg1 = '"' . arg1 . '"' | endif
-  let arg2 = v:fname_new
-  if arg2 =~ ' ' | let arg2 = '"' . arg2 . '"' | endif
-  let arg3 = v:fname_out
-  if arg3 =~ ' ' | let arg3 = '"' . arg3 . '"' | endif
-  if $VIMRUNTIME =~ ' '
-    if &sh =~ '\<cmd'
-      if empty(&shellxquote)
-        let l:shxq_sav = ''
-        set shellxquote&
+if has('win32')
+    set diffexpr=MyDiff()
+    "the ! is used to force overwriting the previous function or command
+    function! MyDiff()
+      let opt = '-a --binary '
+      if &diffopt =~ 'icase' | let opt = opt . '-i ' | endif
+      if &diffopt =~ 'iwhite' | let opt = opt . '-b ' | endif
+      let arg1 = v:fname_in
+      if arg1 =~ ' ' | let arg1 = '"' . arg1 . '"' | endif
+      let arg2 = v:fname_new
+      if arg2 =~ ' ' | let arg2 = '"' . arg2 . '"' | endif
+      let arg3 = v:fname_out
+      if arg3 =~ ' ' | let arg3 = '"' . arg3 . '"' | endif
+      if $VIMRUNTIME =~ ' '
+        if &sh =~ '\<cmd'
+          if empty(&shellxquote)
+            let l:shxq_sav = ''
+            set shellxquote&
+          endif
+          let cmd = '"' . $VIMRUNTIME . '\diff"'
+        else
+          let cmd = substitute($VIMRUNTIME, ' ', '" ', '') . '\diff"'
+        endif
+      else
+        let cmd = $VIMRUNTIME . '\diff'
       endif
-      let cmd = '"' . $VIMRUNTIME . '\diff"'
-    else
-      let cmd = substitute($VIMRUNTIME, ' ', '" ', '') . '\diff"'
-    endif
-  else
-    let cmd = $VIMRUNTIME . '\diff'
-  endif
-  silent execute '!' . cmd . ' ' . opt . arg1 . ' ' . arg2 . ' > ' . arg3
-  if exists('l:shxq_sav')
-    let &shellxquote=l:shxq_sav
-  endif
-endfunction
+      silent execute '!' . cmd . ' ' . opt . arg1 . ' ' . arg2 . ' > ' . arg3
+      if exists('l:shxq_sav')
+        let &shellxquote=l:shxq_sav
+      endif
+    endfunction
+endif
 
 filetype off
 
@@ -151,7 +63,6 @@ filetype plugin indent on
 source $VIMRUNTIME/vimrc_example.vim
 
 syntax on
-
 
 "============== plugin configuration =============
 
@@ -167,7 +78,23 @@ autocmd FileType *
     \    call SuperTabChain(&omnifunc,"<c-p") |
     \endif
 
-"=== easymotion mapping
+"=== Easymotion mapping
+
+"       Easymotion's key
+"Note that easymotion use the last chars(from last to first)
+"for grouping, so that you would like some convenient ones
+let g:EasyMotion_keys='abcdefghijklmnopqrstuvwxyzafj'
+
+"       Easymotion color configuration
+" one char target
+hi link EasyMotionTarget ErrorMsg
+" hi link EasyMotionShade  Comment
+ 
+hi link EasyMotionTarget2First Question
+hi link EasyMotionTarget2Second Question
+ 
+" hi link EasyMotionMoveHL Search
+
 map <Leader> <Plug>(easymotion-prefix)
 
 "move across windows, only in normal-mode
@@ -225,46 +152,10 @@ map z/ <Plug>(incsearch-fuzzy-/)
 map z? <Plug>(incsearch-fuzzy-?)
 map zg/ <Plug>(incsearch-fuzzy-stay)
 
-"===== colorscheme kolor
-" Options must be set before the line `colorscheme kolor' in your vimrc.
-let g:kolor_italic=1                 " Enable italic. Default: 1
-let g:kolor_bold=1                   " Enable bold. Default: 1
-let g:kolor_underlined=0             " Enable underline. Default: 0
-let g:kolor_alternative_matchparen=0 " Gray 'MatchParen' color. Default: 0
-
 "===== clang_format configuration for C/C++
-if has('win32')
-    let g:clang_format_location='clang-format-3.6'
-else
-    let g:clang_format_location='clang-format'
-endif
-"let g:clang_format_style='"'.'Google'.'"'
-"hard-coded clang-format style. 
-"note that there must be at least a space after a semicolon(stupid clang_format)
-let g:clang_format_style='"'.'{BasedOnStyle: llvm,AllowAllParametersOfDeclarationOnNextLine: false,AllowShortFunctionsOnASingleLine: Empty,AlwaysBreakTemplateDeclarations: true,ColumnLimit: 0,IndentWidth: 4, NamespaceIndentation: All}'.'"'
-
-let g:clang_format_command_dict=[]
-if exists('g:clang_format_location')
-    cal add(clang_format_command_dict,clang_format_location)
-endif
-if exists('g:clang_format_style')
-    call add(clang_format_command_dict,'-style='.clang_format_style)
-endif
-let g:clang_format_command=join(clang_format_command_dict,' ')
-
-command! MyClangFormat call s:RunMyClangFormat()  "change this function to a command
-function! s:RunMyClangFormat()
-    "expand(xxx) return the current filename with full path
-    let filename=expand("%:p")
-    "check whether it's a C/C++ file
-    if filename=~'\.cpp\|\.c\|\.cxx\|\.h\|\.hpp'
-        write
-        execute '$read !'.g:clang_format_command.' '.filename
-    endif
-endfunction
-
-" toggle clang format
-nnoremap <F3> Gmz:MyClangFormat<CR>`zdgg
+" toggle clang format, with VIM's filter feature. See `http://vim.wikia.com/wiki/VimTip374'
+nnoremap <F3> :%!clang-format-3.6 -style="{BasedOnStyle: llvm,AllowAllParametersOfDeclarationOnNextLine: false,AllowShortFunctionsOnASingleLine: Empty,AlwaysBreakTemplateDeclarations: true,ColumnLimit: 0,IndentWidth: 4, NamespaceIndentation: All}"<CR><CR>
+vnoremap <F3> !clang-format-3.6 -style="{BasedOnStyle: llvm,AllowAllParametersOfDeclarationOnNextLine: false,AllowShortFunctionsOnASingleLine: Empty,AlwaysBreakTemplateDeclarations: true,ColumnLimit: 0,IndentWidth: 4, NamespaceIndentation: All}"<CR><CR>
 
 "===== Graphic undo configuration
 nnoremap <F5> :GundoToggle<CR>
@@ -292,62 +183,54 @@ let g:haskell_enable_typeroles=1        "                        type roles
 let g:haskell_enable_static_pointers=1  "                        static
 "let g:haskell_indent_xxxx = xx
 
-""===== clang_complete configuration
-""(:messages to show if there is any output from clang_complete)
-""(how to should function signature but not add it when done auto-complete?)
-"
-"let g:clang_use_library=1
-"if !has('win32')
-"    let g:clang_library_path='/usr/lib/x86_64-linux-gnu/libclang-3.6.so.1'
-"else
-"    let g:clang_library_path='C:/softwares/LLVM/bin/libclang.dll'
-"    let g:clang_exec='C:/softwares/LLVM/bin/clang.exe'
-"endif
-""if there is an error, allow us to see it
-"let g:clang_complete_copen=1      "open quickfix window on error
-""let g:clang_hl_errors=1 "highlight warnings and errors the same way as clang
-"let g:clang_complete_macros=1
-"let g:clang_complete_patterns=0
-"let g:clang_hl_errors=1
-"let g:clang_debug=1
-""limit memory use
-"let g:clang_complete_percent=70
+"===== clang_complete configuration
+"(:messages to show if there is any output from clang_complete)
+"(how to should function signature but not add it when done auto-complete?)
+
+let g:clang_use_library=1
+let g:clang_library_path='/usr/lib/x86_64-linux-gnu/libclang-3.6.so.1'
+"if there is an error, allow us to see it
+let g:clang_complete_copen=1      "open quickfix window on error
+"let g:clang_hl_errors=1 "highlight warnings and errors the same way as clang
+let g:clang_complete_macros=1
+let g:clang_complete_patterns=0
+let g:clang_hl_errors=1
+let g:clang_debug=1
+"limit memory use
+let g:clang_complete_percent=70
+let g:clang_user_options='-std=c++11 || exit 0'
 "let g:clang_user_options='-std=c++11 || exit 0'
-""let g:clang_user_options='-std=c++11 || exit 0'
-"" auto-select the first entry in the popup menu and but not insert it
-"let g:clang_auto_select=1
-"" let it complete for macros
-"let g:clang_complete_macros=1
-"
-""set conceallevel=2
-""set concealcursor=vin
-"" so that we can comlete for the parameter, and use <Tab> in normal to jump to
-"" the next parameter
-"let g:clang_snippets=1
-"let g:clang_snippets='clang_complete'
-"let g:clang_conceal_snippets=2
-""let g:clang_complet_optional_args_in_snippets=1
-""let g:clang_trailing_placeholder=0
-"
-""call g:ClangGotoDeclaration() to jump to a declaration(you can also
-""use <C-]> to do the same thing. But this function can be used to do a mapping
-""call g:ClangGotoDeclarationPreview() to view it in a preview window. you can
-""also do it by <C-w>]
-"
-""clang_complete can also jump to declaration of a symbol
-""using <C-]> and jump back using <C-T>
-"
-""above is all you need for clang_complete. If you need more c++ library for
-""autocompletion, then add some kind of these line to the .clang_complete in
-""your project's root directory
-""-std=c++11
-""-I/usr/include/QtGui    #location of your library's header file
-""-I/usr/include/QtCore
-""-I.
-""or you can use this: g:clang_auto_user_options='-I/usr/lib/xxxx'
-"
-"====== mapping for tagbar
-nnoremap <F10> :TagbarToggle<CR>
+" auto-select the first entry in the popup menu and but not insert it
+let g:clang_auto_select=1
+" let it complete for macros
+let g:clang_complete_macros=1
+
+"set conceallevel=2
+"set concealcursor=vin
+" so that we can comlete for the parameter, and use <Tab> in normal to jump to
+" the next parameter
+let g:clang_snippets=1
+let g:clang_snippets='clang_complete'
+let g:clang_conceal_snippets=2
+"let g:clang_complet_optional_args_in_snippets=1
+"let g:clang_trailing_placeholder=0
+
+"call g:ClangGotoDeclaration() to jump to a declaration(you can also
+"use <C-]> to do the same thing. But this function can be used to do a mapping
+"call g:ClangGotoDeclarationPreview() to view it in a preview window. you can
+"also do it by <C-w>]
+
+"clang_complete can also jump to declaration of a symbol
+"using <C-]> and jump back using <C-T>
+
+"above is all you need for clang_complete. If you need more c++ library for
+"autocompletion, then add some kind of these line to the .clang_complete in
+"your project's root directory
+"-std=c++11
+"-I/usr/include/QtGui    #location of your library's header file
+"-I/usr/include/QtCore
+"-I.
+"or you can use this: g:clang_auto_user_options='-I/usr/lib/xxxx'
 
 "====== jedi-vim configuration
 " g:jedi#goto_command - go to definition or assignment(Default <leader>d)
@@ -369,19 +252,8 @@ let g:indentLine_enabled=0 "default not enabled, use :IndentLines... to enable
 "====== bufferline configuration
 nnoremap <F2> :echo bufferline#get_echo_string()<CR>
 
-"====== Tabular configuration
-if exists (":Tabularize")
-    nmap <leader>= :Tabularize /=<CR>
-    vmap <leader>= :Tabularize /=<CR>
-    nmap <leader>: :Tabularize /:\zs<CR>
-    vmap <leader>: :Tabularize /:\zs<CR>
-endif
-
-"====== Larget File handling
-let g:LargeFile=50
-" use :Unlarge to undo the LargeFile setting
-" use :Large   to do it
-" use :Large!  to force 
+"====== tagbar configuration
+nnoremap <F10> :TagbarToggle<CR>
 
 "====== Rainbow highlighting
 " just use :Rainbow, or see the help file
@@ -400,61 +272,37 @@ function! s:align()
     endif
 endfunction
 
-" ==== for vim-css-color
-let g:cssColorVimDoNotMessMyUpdatetime = 1
-
-
-" ==== html5 conf
-"Disable event-handler attributes support:
-let g:html5_event_handler_attributes_complete = 0
-
-"Disable RDFa attributes support:
-let g:html5_rdfa_attributes_complete = 0
-
-"Disable microdata attributes support:
-let g:html5_microdata_attributes_complete = 0
-
-"Disable WAI-ARIA attribute support:
-let g:html5_aria_attributes_complete = 0
-
-set conceallevel=1
-let g:javascript_conceal_function             = "ƒ"
-"let g:javascript_conceal_function             = "λ"
-let g:javascript_conceal_null                 = "ø"
-let g:javascript_conceal_this                 = "@"
-"let g:javascript_conceal_return               = "<"
-let g:javascript_conceal_undefined            = "¿"
-let g:javascript_conceal_NaN                  = "ℕ"
-let g:javascript_conceal_prototype            = "¶"
-let g:javascript_conceal_static               = "•"
-let g:javascript_conceal_super                = "Ω"
-let g:javascript_conceal_arrow_function       = "⇒"
-let g:javascript_conceal_noarg_arrow_function = "🞅"
-let g:javascript_conceal_underscore_arrow_function = "🞅"
-
-
-"a cheat-sheet for my <F-*> mapping
-"nnoremap <F2> :echo bufferline#get_echo_string()
-"nnoremap <F3> Gmz:MyClangFormat<CR>`zdgg #perform clang-format
-"map <F4> :NERDTreeToggle<CR>           #open NERDTree buffer
-"nnoremap <F5> :GundoToggle<CR>         #open Graphic-Undo-Buffer
-"nnoremap <F6> :ccl<CR>                 #close the quickfix window
-"map <F8> :w<CR>:SyntasticCheck<CR>     #perform Syntatic check
-"map <F9> :SyntasticToggleMode<CR>      #Syntatic-Checker negative mode
-"nnoremap <F10> :TagbarToggle<CR>
-"nnoremap <F12> :e ++enc=
-
 "============== end plugin configuration =================
 
 
 "============== vim builtin configuration ==============
 set background=dark
 if has('gui_running')
-    set bg=light
-    colorscheme solarized
-    "colorscheme mayansmoke
+    if has('win32')
+        colorscheme solarized
+    else
+        colorscheme default
+    endif
+
     "dont set cursorline in terminal, it suck
     set cursorline
+    
+    "this option should 'squezz' 'headroom' space for the gui-vim
+    "However, in ubuntu, there is a still annoying head-tool-bar there
+    set guiheadroom=-100
+
+    " equal to :winsize {width} {height}
+    set lines=39
+    set columns=84
+   
+    "the startup windows position
+    winpos  683 30
+    
+    "this is used to enlarge the current buffer window you are in
+    nnoremap <M-[> <C-w>2<
+    nnoremap <M-]> <C-w>2>
+    nnoremap <M-;> <C-w>2+
+    nnoremap <M-'> <C-w>2-
 else
     "colorscheme kolor
     colorscheme default
@@ -464,6 +312,28 @@ endif
 if $COLORTERM=='gnome-terminal'
     set t_Co=256
 endif
+
+" flip `wrap/nowrap'
+function! s:RunFlipWrap()
+    if &wrap == 1
+        set nowrap
+    else
+        set wrap
+    endif
+endfunction
+command! FlipWrap call s:RunFlipWrap()
+nnoremap <F1> :FlipWrap<CR>
+
+" flip `hlsearch/nohlsearch'
+function! s:RunFlipHlsearch()
+    if &hlsearch == 1
+        set nohlsearch
+    else
+        set hlsearch
+    endif
+endfunction
+command! FlipHlsearch call s:RunFlipHlsearch()
+nnoremap <silent> ,n :FlipHlsearch<CR>
 
 set laststatus=2
 
@@ -476,7 +346,7 @@ else
 endif
 
 set number
-"set relativenumber
+" set relativenumber
 
 "avoid the annoying `write before xxx' when hide buffer
 set hidden
@@ -511,15 +381,14 @@ set mousehide
 
 set mouse=a
 set history=1000
-"set nobackup
+set nobackup
 set shiftwidth=4
 set numberwidth=4
 set tabstop=4
 
-"have to create these dir yourself first
-"
+" have to create these dir yourself first
 if !has('win32')
-    set undodir=~/.vim/tmp/undodir//
+    set undodir=~/.vim/tmp/undodir/
     set backupdir=~/.vim/tmp/backup/
 else
     set undodir=$VIM/vimfiles/tmp/undodir/
@@ -551,7 +420,7 @@ set cmdheight=2
 "don't break a line
 set nolinebreak
 
-"use space instead of tabs
+" this would automatically replace tab with space
 set expandtab
 
 "this affect the behavior of 'jk' in insert mode
@@ -612,28 +481,16 @@ set cinoptions+=g0,:0,(0,c0,W4,w1,t0,Ls
       
 "format options
 set formatoptions=croqlj
-"the default is croql, the 'j' mean that when joining
-"lines, remove a command reader. Example:
-" Joinning     int j;   //first line
-"                       //second line
-" Become       int j;   //first line second line
-
-"turn off the stupid highlight search
-nnoremap <silent> ,n :nohls<CR>
+"Default is `croql'.
+"The 'j' means that when joining lines, remove a command reader. Example:
+" Joinning:
+"   int j;   //first line
+"            //second line
+" Get:
+"   int j;   //first line second line
 
 "cd to the directory containing the file in the buffer
 nmap <silent> ,cd :lcd %:h<CR>
-
-"this option should 'squezz' 'headroom' space for the gui-vim
-"However, in ubuntu, there is a still annoying head-tool-bar there
-set guiheadroom=-100
-
-"equal to :winsize {width} {height}
-set lines=39
-set columns=84
-
-"the startup windows position
-winpos  683 30
 
 "set file for keyword-completion
 set complete+=s,k,d
@@ -641,13 +498,16 @@ set complete+=s,k,d
 " 'k' option stand for looking into a dict-file given in the dictionary option
 " 'd' option ... scan current and included file for defined name and macro
 
-"preview windows would show you the doc of the completing-func,which is unnecessary
-"if you want the preview windows, then use the 'preview' option. After that
+"preview windows would show you the doc of the completing-func,which is unnecessary.
+"If you want the preview windows, then use the 'preview' option. After that
 "you can close the preview option with 'au CompleteDone * pclose'
 set completeopt-=preview
 
 " gq  is the operator to format text. Universally, select a block of text and
 " then press  gq  , and then vim will handle the format for you
+
+" allow project specific .vimrc configuration
+set exrc
 
 "switch between tags
 nnoremap <C-TAB> :tabnext<CR>
@@ -658,10 +518,6 @@ nnoremap <leader><Tab> :b
 
 "close the quick fix window
 nnoremap <F6> :ccl<CR>
-
-" filename/directory name completion
-" seem like that SuperTab have done that..
-inoremap <C-f> <C-x><C-f>
 
 nnoremap L $
 nnoremap H ^
@@ -677,8 +533,8 @@ onoremap <S-Tab> <C-C><C-W>w
 no <left> <Nop>
 no <right> <Nop>
 no <down> ddp
-no <up> ddkP      
 "note that this is a uppercase p
+no <up> ddkP      
 ino <down> <Nop>
 ino <up> <Nop>
 ino <left> <Nop>
@@ -687,15 +543,6 @@ vno <down> <Nop>
 vno <up> <Nop>
 vno <left> <Nop>
 vno <right> <Nop>
-
-" enlarge the current entire gvim windows(not so working...)
-nnoremap <C-\> <Esc>:set columns+=3 <bar> set lines+=3<CR>
-
-"this is used to enlarge the current buffer window you are in
-nnoremap <M-[> <C-w>2<
-nnoremap <M-]> <C-w>2>
-nnoremap <M-;> <C-w>2+
-nnoremap <M-'> <C-w>2-
 
 "make it ease to edit and source the .vimrc file
 nnoremap ev :vsplit $MYVIMRC<CR>
@@ -712,12 +559,17 @@ inoremap <c-c> <esc>zza
 "to insert newline while remaining in normal mode
 nnoremap <CR> O<esc>
 
-"just type jk or kj to get back to normal mode 
+" just type jk or kj to get back to normal mode 
 inoremap jk <esc>
 inoremap kj <esc>
-"vnoremap jk <esc>
+" make it even nicer
+inoremap hj <esc>
+inoremap jh <esc>
+"vnoremap jk <esc>  "DONOT map this, it is evil
 "vnoremap kj <esc>
-"vnoremap <Space><Space> <esc>
+" conditional virtual editing
+noremap <silent> <expr>j (v:count == 0?'gj':'j')
+noremap <silent> <expr>k (v:count == 0?'gk':'k')
 
 "check out operator-pending mapping
 "there is a pretty cool one. guess what it mean:
@@ -725,29 +577,28 @@ inoremap kj <esc>
 "then press 'db'. It will delete till the first 'pattern' found
 "turn out that vim's operator-mapping tech is super powerful!!!!
 
-"show vim command history
-nnoremap <C-h> q:
-
 "originally, g<Ctrl-]> would jump to definition
 "             <Ctrl-]> would jump to declaration
-nnoremap <C-[> g<C-]>
+" ==== CAVEAT!!!! THIS IS EVIL!!!! ====
+"       Once defined, this will make VIM search for tag file on startup.
+"       If VIM fail to find the tag file, it will warn about
+"           E433: No Tag File
+"           E426: tag not found, xxx
+"       where ``xxx'' is the current identifier under the cursor.
+"       Worse, it will pre-push a `c' key for you, which means that if you
+"       push j or k after starting up VIM, you will delete a line....
+"       Installing the plugin ``tagbar.vim'' helps a little bit, but not under 
+"       all circumstance.
+" nnoremap <C-[> g<C-]>
 
 "textwidth for all filetype
 " textwidth 0 means no textwidth(arbitarily long)
 set textwidth=80
 
-"when searching, I want to type n to incrementally search
-"but vim does the opposite. reverse it
-nnoremap n N
-
 "folding mapping
 nnoremap <space>a za
 "zi to swich folding on and off
 "zR open all fold, zM close all fold
-
-" Wrapped lines goes down/up to next row, rather than next line in file
-noremap j gj
-noremap k gk
 
 " For when you forget to sudo.. Really write the file
 cmap w!! w !sudo tee % >/dev/null
@@ -756,8 +607,8 @@ cmap xx !
 " vertical split a buffer
 nnoremap <C-b> :vert sb
 
-" press F12 to reload current file in different encoding
-nnoremap <F12> :e ++enc=
+noremap <M-u> <C-w>p<C-u><C-w>p
+noremap <M-d> <C-w>p<C-d><C-w>p
 
 "vimscript:ABBREVIATIONS{{{
 iabbr adn and
@@ -811,7 +662,18 @@ endfunction
 
 "====== simple configuration for html
 let g:html_indent_inctags="html,body,head,tbody"
-
+function! s:RunHtmlPrettify()
+    if &ft != "html"
+        echo "not a html file"
+        return 
+    endif
+    silent! exec "%s/<[^>]*>/\r&\r/g"
+    " these two line cannot be re-ordered, otherwise the g/.. command would have
+    " no time to execute. Bug report:
+    exec "normal gg=G"
+    silent! exec "g/^\s*$/d"
+endfunction
+command! HtmlPrettify call s:RunHtmlPrettify()
 
 "vimscript: FOLDING setting {{{
 "pressing za to fold this and unfold the folder
@@ -879,60 +741,61 @@ autocmd BufNewFile,BufReadPost *.md set filetype=markdown
 autocmd BufNewFile,BufReadPost *.S   set filetype=gas
 autocmd BufNewFile,BufReadPost *.asm set filetype=gas
 
-augroup misc_ft
-    "autocmd FileType haskell let g:indentLine_enabled=1
-    autocmd FileType ruby    let g:indentLine_enabled=1
-    au FileType php setl ofu=phpcomplete#CompletePHP
-    au FileType ruby,eruby setl ofu=rubycomplete#Complete
-    "au FileType html,xhtml setl ofu=htmlcomplete#CompleteTags
-    au FileType css setl ofu=csscomplete#CompleteCSS
-augroup END
+"autocmd FileType haskell let g:indentLine_enabled=1
+autocmd FileType ruby    let g:indentLine_enabled=1
 
 "vimscript: COMMENT_SETTINGs for some languages{{{
 augroup comment_setting
-    "used to comment out a line with with the corresponding style
-    autocmd Filetype cpp nnoremap        <M-->  I//<Esc>j
-    autocmd Filetype java nnoremap       <M-->  I//<esc>j
-    autocmd Filetype javascript nnoremap <M-->  I//<Esc>j
-    autocmd Filetype c nnoremap          <M-->  I/*<esc>A*/<esc>j
-    autocmd Filetype python nnoremap     <M-->  I#<esc>j
-    autocmd Filetype vim nnoremap        <M-->  I"<esc>j
-    autocmd Filetype sh nnoremap         <M-->  I#<esc>j
-    autocmd Filetype perl nnoremap       <M-->  I#<esc>j
-    autocmd Filetype css nnoremap        <M-->  I/*<esc>A*/<esc>j
-    autocmd Filetype sml nnoremap        <M-->  I(*<esc>A*)<esc>j
+    set nohlsearch
+    " Used to comment out a line with the corresponding style
+    " With the help of vim's filtering feature
+    " Map it for normal, insert and virtual modes
+    autocmd Filetype cpp noremap        <C-j>  :s/\(\s*\)\(.*\)/\1\/\/ \2/<CR>j
+    autocmd Filetype java noremap       <C-j>  :s/\(\s*\)\(.*\)/\1\/\/ \2/<CR>j
+    autocmd Filetype javascript noremap <C-j>  :s/\(\s*\)\(.*\)/\1\/\/ \2/<CR>j
+    autocmd Filetype c noremap          <C-j>  :s/\(\s*\)\(.*\)/\1\/* \2 *\//<CR>j
+    autocmd Filetype python noremap     <C-j>  :s/\(\s*\)\(.*\)/\1# \2/<CR>j
+    autocmd Filetype vim noremap        <C-j>  :s/\(\s*\)\(.*\)/\1" \2/<CR>j
+    autocmd Filetype vim noremap        <C-j>  :s/\(\s*\)\(.*\)/\1" \2/<CR>j
+    autocmd Filetype sh noremap         <C-j>  :s/\(\s*\)\(.*\)/\1# \2/<CR>j
+    autocmd Filetype perl noremap       <C-j>  :s/\(\s*\)\(.*\)/\1# \2/<CR>j
+    autocmd Filetype css noremap        <C-j>  :s/\(\s*\)\(.*\)/\1\/* \2 *\//<CR>j
+    autocmd Filetype sml noremap        <C-j>  :s/\(\s*\)\(.*\)/\1(* \2 *)/<CR>j
 
     "accordingly, to cancel the comment:
-    autocmd Filetype cpp nnoremap        <M-=> ^xx<Esc>j
-    autocmd Filetype java nnoremap       <M-=> ^xx<esc>j
-    autocmd Filetype javascript nnoremap <M-=> ^xx<Esc>j
-    autocmd Filetype c nnoremap          <M-=> ^xx<esc>$xx<esc>j
-    autocmd Filetype python nnoremap     <M-=> ^x<esc>j
-    autocmd Filetype vim nnoremap        <M-=> ^x<esc>j
-    autocmd Filetype sh nnoremap         <M-=> ^x<esc>j
-    autocmd Filetype perl nnoremap       <M-=> ^x<esc>j
-    autocmd Filetype css nnoremap        <M-=> ^xx<esc>$xx<esc>j
-    autocmd Filetype sml nnoremap        <M-=> ^xx<esc>$xx<esc>j
+    autocmd Filetype cpp noremap        <C-k> :s/\(\s*\)\/\/ \?\(.*\)/\1\2/<CR>k
+    autocmd Filetype java noremap       <C-k> :s/\(\s*\)\/\/ \?\(.*\)/\1\2/<CR>k
+    autocmd Filetype javascript noremap <C-k> :s/\(\s*\)\/\/ \?\(.*\)/\1\2/<CR>k
+    autocmd Filetype c noremap          <C-k> :s/\(\s*\)\/\* \?\(.*\) \*\//\1\2/<CR>k
+    autocmd Filetype python noremap     <C-k> :s/\(\s*\)# \?\(.*\)/\1\2/<CR>k
+    autocmd Filetype vim noremap        <C-k> :s/\(\s*\)" \?\(.*\)/\1\2/<CR>k
+    autocmd Filetype sh noremap         <C-k> :s/\(\s*\)# \?\(.*\)/\1\2/<CR>k
+    autocmd Filetype perl noremap       <C-k> :s/\(\s*\)# \?\(.*\)/\1\2/<CR>k
+    autocmd Filetype css noremap        <C-k> :s/\(\s*\)\/\* \?\(.*\) \?\*\//\1\2/<CR>k
+    autocmd Filetype sml noremap        <C-k> :s/\(\s*\)(\* \?\(.*\) \?\*)/\1\2/<CR>k
 
     "also note that some key-mapping just don't work when you use
-    "vim in terminal, like the <M--> one
+    "vim in terminal, like <M-->
 
     "to create a traditional c-style comment above the current line
-    autocmd Filetype c nnoremap <S-CR>   O/* */<Esc>hi
+    autocmd Filetype c nnoremap <S-CR>   O/*  */<Esc>hhi
+    autocmd Filetype c inoremap <S-CR>   O/*  */<Esc>hhi
     "add traditional c-style comment to the right of current line
-    autocmd Filetype c nnoremap <C-l>    $a   /* */<esc>hha
-    autocmd Filetype c inoremap <C-l>    <esc>$a   /* */<esc>hha
+    autocmd Filetype c nnoremap <C-l>    $a   /*  */<esc>hhha
+    autocmd Filetype c inoremap <C-l>    <esc>$a   /*  */<esc>hhha
 
     " add a comment above the current line(note the tailing whitespace)
     autocmd Filetype cpp nnoremap <S-CR> O// 
-    "add traditional c-style comment to the right of current line
-    autocmd Filetype cpp nnoremap <C-l>  $a   /* */<esc>hha
-    autocmd Filetype cpp inoremap <C-l>  <esc>$a   /* */<esc>hha
+    autocmd Filetype cpp inoremap <S-CR> O// 
+    " add traditional c-style comment to the right of current line
+    autocmd Filetype cpp nnoremap <C-l>  $a   // 
+    autocmd Filetype cpp inoremap <C-l>  <esc>$a   // 
 
     autocmd Filetype java nnoremap <S-CR> O// 
-    "add traditional c-style comment to the right of current line
-    autocmd Filetype java nnoremap <C-l>  $a   /* */<esc>hha
-    autocmd Filetype java  inoremap <C-l> <esc>$a   /* */<esc>hha
+    autocmd Filetype java inoremap <S-CR> O// 
+    " add traditional c-style comment to the right of current line
+    autocmd Filetype java nnoremap <C-l>  $a   // 
+    autocmd Filetype java  inoremap <C-l> <esc>$a   // 
 
     " add a comment above the current line(note the tailing whitespace)
     autocmd Filetype java nnoremap   <S-CR> O// 
@@ -940,15 +803,46 @@ augroup comment_setting
     autocmd Filetype sh nnoremap     <S-CR> O# 
     autocmd Filetype python nnoremap <S-CR> O# 
     autocmd Filetype perl nnoremap   <S-CR> O# 
-    autocmd Filetype css nnoremap    <S-CR> O/* */<Esc>hi
-    autocmd Filetype sml nnoremap    <S-CR> O(* *)<Esc>hi
+    autocmd Filetype css nnoremap    <S-CR> O/*  */<Esc>hhi
+    autocmd Filetype sml nnoremap    <S-CR> O(*  *)<Esc>hhi
+    " insert mode
+    autocmd Filetype java inoremap   <S-CR> O// 
+    autocmd Filetype vim inoremap    <S-CR> O" 
+    autocmd Filetype sh inoremap     <S-CR> O# 
+    autocmd Filetype python inoremap <S-CR> O# 
+    autocmd Filetype perl inoremap   <S-CR> O# 
+    autocmd Filetype css inoremap    <S-CR> O/*  */<Esc>hhi
+    autocmd Filetype sml inoremap    <S-CR> O(*  *)<Esc>hhi
 
 augroup END
 "}}}
 
-let g:clang_include_sysheaders = 1
-let g:clang_include_sysheaders_from_gcc = 1
-let g:clang_cpp_options = '-std=gnu++11'
-"let g:clang_diagsopt = ''   " <- disable diagnostics
-"let g:clang_exec = 'clang --target=x86_64-w64-mingw32 '
-"set tags=/path/to/tags
+" mutt email configuration
+autocmd BufNewFile,BufRead /tmp/mutt* set textwidth=78
+autocmd BufNewFile,BufRead /tmp/mutt* vnoremap <C-f> :!/home/walkerlala/software/format_email.py <CR><CR>
+
+"a cheat-sheet for my <F*> mapping
+" nnoremap <F1> :FlipWrap
+" nnoremap <F2> :echo bufferline#get_echo_string()
+" nnoremap <F3> (use vim's filter        #perform clang-format
+" map      <F4> :NERDTreeToggle<CR>      #open NERDTree buffer
+" nnoremap <F5> :GundoToggle<CR>         #open Graphic-Undo-Buffer
+" nnoremap <F6> :ccl<CR>                 #close the quickfix window
+" nnoremap <F7> 
+" map      <F8> :w<CR>:SyntasticCheck<CR>     #perform Syntatic check
+" map      <F9> :SyntasticToggleMode<CR>      #Syntatic-Checker negative mode
+" nnoremap <F10> :TagbarToggle<CR>
+
+" ===== because gnome-terminal cannot accept F* keys, make a little tweak
+command! GnomeTerminalF1 FlipWrap
+command! GnomeTerminalF2 echo bufferline#get_echo_string()
+command! GnomeTerminalF3 %!clang-format-3.6 -style="{BasedOnStyle: llvm,AllowAllParametersOfDeclarationOnNextLine: false,AllowShortFunctionsOnASingleLine: Empty,AlwaysBreakTemplateDeclarations: true,ColumnLimit: 0,IndentWidth: 4, NamespaceIndentation: All}"
+command! GnomeTerminalF4 NERDTreeToggle
+command! GnomeTerminalF5 GundoToggle
+command! GnomeTerminalF6 ccl
+" command! GnomeTerminalF7
+command! GnomeTerminalF8 SyntasticCheck
+command! GnomeTerminalF9 SyntasticToggleMode
+command! GnomeTerminalF10 TagbarToggle
+
+set tags="./tags"

@@ -506,6 +506,9 @@ set completeopt-=preview
 " gq  is the operator to format text. Universally, select a block of text and
 " then press  gq  , and then vim will handle the format for you
 
+" allow project specific .vimrc configuration
+set exrc
+
 "switch between tags
 nnoremap <C-TAB> :tabnext<CR>
 
@@ -591,10 +594,6 @@ noremap <silent> <expr>k (v:count == 0?'gk':'k')
 "textwidth for all filetype
 " textwidth 0 means no textwidth(arbitarily long)
 set textwidth=80
-
-"when searching, I want to type n to incrementally search
-"but vim does the opposite. reverse it
-nnoremap n N
 
 "folding mapping
 nnoremap <space>a za
@@ -779,24 +778,24 @@ augroup comment_setting
     "vim in terminal, like <M-->
 
     "to create a traditional c-style comment above the current line
-    autocmd Filetype c nnoremap <S-CR>   O/* */<Esc>hi
-    autocmd Filetype c inoremap <S-CR>   O/* */<Esc>hi
+    autocmd Filetype c nnoremap <S-CR>   O/*  */<Esc>hhi
+    autocmd Filetype c inoremap <S-CR>   O/*  */<Esc>hhi
     "add traditional c-style comment to the right of current line
-    autocmd Filetype c nnoremap <C-l>    $a   /* */<esc>hha
-    autocmd Filetype c inoremap <C-l>    <esc>$a   /* */<esc>hha
+    autocmd Filetype c nnoremap <C-l>    $a   /*  */<esc>hhha
+    autocmd Filetype c inoremap <C-l>    <esc>$a   /*  */<esc>hhha
 
     " add a comment above the current line(note the tailing whitespace)
     autocmd Filetype cpp nnoremap <S-CR> O// 
     autocmd Filetype cpp inoremap <S-CR> O// 
     " add traditional c-style comment to the right of current line
-    autocmd Filetype cpp nnoremap <C-l>  $a   /* */<esc>hha
-    autocmd Filetype cpp inoremap <C-l>  <esc>$a   /* */<esc>hha
+    autocmd Filetype cpp nnoremap <C-l>  $a   // 
+    autocmd Filetype cpp inoremap <C-l>  <esc>$a   // 
 
     autocmd Filetype java nnoremap <S-CR> O// 
     autocmd Filetype java inoremap <S-CR> O// 
     " add traditional c-style comment to the right of current line
-    autocmd Filetype java nnoremap <C-l>  $a   /* */<esc>hha
-    autocmd Filetype java  inoremap <C-l> <esc>$a   /* */<esc>hha
+    autocmd Filetype java nnoremap <C-l>  $a   // 
+    autocmd Filetype java  inoremap <C-l> <esc>$a   // 
 
     " add a comment above the current line(note the tailing whitespace)
     autocmd Filetype java nnoremap   <S-CR> O// 
@@ -804,16 +803,16 @@ augroup comment_setting
     autocmd Filetype sh nnoremap     <S-CR> O# 
     autocmd Filetype python nnoremap <S-CR> O# 
     autocmd Filetype perl nnoremap   <S-CR> O# 
-    autocmd Filetype css nnoremap    <S-CR> O/* */<Esc>hi
-    autocmd Filetype sml nnoremap    <S-CR> O(* *)<Esc>hi
+    autocmd Filetype css nnoremap    <S-CR> O/*  */<Esc>hhi
+    autocmd Filetype sml nnoremap    <S-CR> O(*  *)<Esc>hhi
     " insert mode
     autocmd Filetype java inoremap   <S-CR> O// 
     autocmd Filetype vim inoremap    <S-CR> O" 
     autocmd Filetype sh inoremap     <S-CR> O# 
     autocmd Filetype python inoremap <S-CR> O# 
     autocmd Filetype perl inoremap   <S-CR> O# 
-    autocmd Filetype css inoremap    <S-CR> O/* */<Esc>hi
-    autocmd Filetype sml inoremap    <S-CR> O(* *)<Esc>hi
+    autocmd Filetype css inoremap    <S-CR> O/*  */<Esc>hhi
+    autocmd Filetype sml inoremap    <S-CR> O(*  *)<Esc>hhi
 
 augroup END
 "}}}
@@ -834,4 +833,16 @@ autocmd BufNewFile,BufRead /tmp/mutt* vnoremap <C-f> :!/home/walkerlala/software
 " map      <F9> :SyntasticToggleMode<CR>      #Syntatic-Checker negative mode
 " nnoremap <F10> :TagbarToggle<CR>
 
-"set tags=/path/to/tags
+" ===== because gnome-terminal cannot accept F* keys, make a little tweak
+command! GnomeTerminalF1 FlipWrap
+command! GnomeTerminalF2 echo bufferline#get_echo_string()
+command! GnomeTerminalF3 %!clang-format-3.6 -style="{BasedOnStyle: llvm,AllowAllParametersOfDeclarationOnNextLine: false,AllowShortFunctionsOnASingleLine: Empty,AlwaysBreakTemplateDeclarations: true,ColumnLimit: 0,IndentWidth: 4, NamespaceIndentation: All}"
+command! GnomeTerminalF4 NERDTreeToggle
+command! GnomeTerminalF5 GundoToggle
+command! GnomeTerminalF6 ccl
+" command! GnomeTerminalF7
+command! GnomeTerminalF8 SyntasticCheck
+command! GnomeTerminalF9 SyntasticToggleMode
+command! GnomeTerminalF10 TagbarToggle
+
+set tags="./tags"
