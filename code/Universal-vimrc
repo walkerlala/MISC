@@ -480,7 +480,7 @@ set cinoptions+=g0,:0,(0,c0,W4,w1,t0,Ls
 			"c3,C0,/0,(2s,us,U0,w0,W0,k0,m0,j0,J0,)20,*70,#0
       
 "format options
-set formatoptions=croqlj
+set formatoptions=croqljm
 "Default is `croql'.
 "The 'j' means that when joining lines, remove a command reader. Example:
 " Joinning:
@@ -488,6 +488,7 @@ set formatoptions=croqlj
 "            //second line
 " Get:
 "   int j;   //first line second line
+"The 'm' make vim break text for multibyte characters above 255.
 
 "cd to the directory containing the file in the buffer
 nmap <silent> ,cd :lcd %:h<CR>
