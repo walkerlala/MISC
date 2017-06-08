@@ -4,10 +4,16 @@ set use_from = yes
 set envelope_from = yes
 
 set smtp_url = "smtps://ablacktshirt@gmail.com@smtp.gmail.com:465/"
-#set smtp_pass = "<gmail password>"
+# set smtp_pass = ""
+
 set imap_user = "ablacktshirt@gmail.com"
-#set imap_pass = "<gmail password>"
+# set imap_pass = ""
 set folder = "imaps://imap.gmail.com:993"
+
+#set mbox_type = Maildir
+#set sendmail    = /usr/bin/msmtp
+#set folder = ~/Mail/BLACK
+
 set spoolfile = "+INBOX"
 set postponed="+[Gmail]/Drafts"
 set record="+Sent"  #thunderbird use this, so let mutt use this too
@@ -23,9 +29,10 @@ set auto_tag=yes
 set charset="utf-8"
 set mail_check=60               # check new mails every 60s
 set imap_check_subscribed
+set fcc_attach
 set include                     # include message in replies
-#set sort='threads'
-set sort_aux=date-received      # sort thread by date received
+set sort='threads'
+set sort_aux=last-date-received      # sort thread by date received
 set mark_old=no                 # dont mark unread message as old
 #set pager_context=3             # display 3 lines of context in pager
 set pager_stop                  # dont skip msgs on next page
@@ -34,6 +41,82 @@ set quit=ask-yes                # ask before exit. Default to yes
 # put the encoding in your mail, so that other people's mail client 
 # decode your email.
 set send_charset='us-ascii:iso-8859-1:utf-8:gb2312"
+
+###################################################################
+# list of folders that are considered to be mailboxes (folders that
+# receive incoming mail
+#
+# Just list the more important mailboxs you want to see first, mutt
+# will automatically fillout the others left
+###################################################################
+mailboxes !
+mailboxes =INBOX
+mailboxes =perfbook
+mailboxes =Self
+mailboxes =Self/Self-Note
+mailboxes =Self/Self-Tasks
+mailboxes =Self/Self-Thoughts
+mailboxes =[Gmail]
+mailboxes =[Gmail]/重要
+mailboxes =[Gmail]/Drafts
+mailboxes =[Gmail]/已发邮件
+mailboxes =[Gmail]/垃圾邮件
+mailboxes =[Gmail]/已删除邮件
+mailboxes =[Gmail]/已加星标
+mailboxes =[Gmail]/草稿
+mailboxes =[Gmail]/所有邮件
+#mailboxes =[Imap]   #you cannot explicitly state the `[Imap]' folder
+mailboxes =Sent
+mailboxes =Archive
+mailboxes =Trash
+mailboxes =ubuntu-user
+mailboxes =golang-nuts
+mailboxes =java-concurrency
+mailboxes =mutt-user 
+mailboxes =tensorflow
+mailboxes =isocpp
+mailboxes =isocpp/std-proposals
+mailboxes =isocpp/std-discussion
+mailboxes =haiku
+mailboxes =haiku/haiku-gsoc
+mailboxes =haiku/haiku-devel
+mailboxes =haiku/haiku-list
+mailboxes =haiku/haiku-web
+mailboxes =haiku/haikuports-commits
+mailboxes =FreeBSD
+mailboxes =FreeBSD/freebsd-hackers
+mailboxes =FreeBSD/freebsd-questions
+mailboxes =FreeBSD/freebsd-hardware
+mailboxes =FreeBSD/freebsd-current
+mailboxes =linux-kernel
+mailboxes =linux-kernel/fs-encrypt
+mailboxes =linux-kernel/kernel-newbie
+mailboxes =linux-kernel/linux-doc
+mailboxes =linux-kernel/linux-ext4
+mailboxes =linux-kernel/linux-btrfs
+mailboxes =linux-kernel/linux-fsdevel
+mailboxes =linux-kernel/linux-mm
+mailboxes =linux-kernel/linux-netfilter
+mailboxes =linux-kernel/linux-xfs
+mailboxes =linux-kernel/xfstest
+mailboxes =haskell
+mailboxes =haskell/haskell-cafe
+mailboxes =haskell/haskell-list
+mailboxes =haskell/haskell-beginner
+mailboxes =haskell/haskell-primer
+mailboxes =python
+mailboxes =python/python-Dev
+mailboxes =python/python-list
+
+# Note that you can use `subscribe someml@someml.org' to tell mutt that you
+# have subscribed to a mailing list called `someml', so that nexttime you can
+# use `L' to easily reply to a mailing list, not a private recipent.
+# However, now that Gmail sort that out for me, let's be lazy...
+
+#############################################################
+# END mailboxes
+##############################################################
+
 
 #############################################
 # auto_view configuration
@@ -336,75 +419,12 @@ macro index A \
 # <untag-pattern> starts an untag pattern.
 # .             matches everything, so that we untag everything.
 
+# I really cannot press <C-R> that fluently...
+macro index,pager "z" "<read-thread>" "mark thread as read"
+
 ################
 # END Macro
 ################
-
-###################################################################
-# list of folders that are considered to be mailboxes (folders that
-# receive incoming mail
-#
-# Just list the more important mailboxs you want to see first, mutt
-# will automatically fillout the others left
-###################################################################
-mailboxes !
-mailboxes =INBOX
-mailboxes =perfbook
-mailboxes =mutt-user 
-mailboxes =[Gmail]
-mailboxes =[Gmail]/重要
-mailboxes =[Gmail]/Drafts
-mailboxes =[Gmail]/已发邮件
-mailboxes =[Gmail]/垃圾邮件
-mailboxes =[Gmail]/已删除邮件
-mailboxes =[Gmail]/已加星标
-mailboxes =[Gmail]/草稿
-mailboxes =[Gmail]/所有邮件
-#mailboxes =[Imap]   #you cannot explicitly state the `[Imap]' folder
-mailboxes =Sent
-mailboxes =Archive
-mailboxes =Trash
-mailboxes =java-concurrency
-mailboxes =haiku
-mailboxes =haiku/haiku-gsoc
-mailboxes =haiku/haiku-devel
-mailboxes =haiku/haiku-list
-mailboxes =haiku/haiku-web
-mailboxes =haiku/haikuports-commits
-mailboxes =FreeBSD
-mailboxes =FreeBSD/freebsd-hackers
-mailboxes =FreeBSD/freebsd-questions
-mailboxes =FreeBSD/freebsd-hardware
-mailboxes =FreeBSD/freebsd-current
-mailboxes =linux-kernel
-mailboxes =linux-kernel/fs-encrypt
-mailboxes =linux-kernel/kernel-newbie
-mailboxes =linux-kernel/linux-doc
-mailboxes =linux-kernel/linux-ext4
-mailboxes =linux-kernel/linux-fsdevel
-mailboxes =linux-kernel/linux-mm
-mailboxes =linux-kernel/linux-netfilter
-mailboxes =linux-kernel/linux-xfs
-mailboxes =linux-kernel/xfstest
-mailboxes =haskell
-mailboxes =haskell/haskell-cafe
-mailboxes =haskell/haskell-list
-mailboxes =haskell/haskell-beginner
-mailboxes =python
-mailboxes =python/python-Dev
-mailboxes =python/python-list
-mailboxes =ubuntu-user
-mailboxes =Self
-mailboxes =Self/Self-Note
-
-# Note that you can use `subscribe someml@someml.org' to tell mutt that you
-# have subscribed to a mailing list called `someml', so that nexttime you can
-# use `L' to easily reply to a mailing list, not a private recipent.
-# However, now that Gmail sort that out for me, let's be lazy...
-
-#############################################################
-# END mailboxes
-##############################################################
 
 #####
 # address book alias
