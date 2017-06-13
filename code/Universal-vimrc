@@ -707,6 +707,7 @@ augroup filetype_cpp
     autocmd Filetype cpp let g:syntastic_cpp_compiler_options='-W -Wall -pedantic -std=c++11'
     autocmd Filetype cpp set foldmethod=syntax
     autocmd Filetype cpp set nofoldenable
+    autocmd Filetype cpp set matchpairs+=<:>
 augroup END
 " if set, clang_complete won't be loaded.
 "let g:clang_complete_loaded=1
