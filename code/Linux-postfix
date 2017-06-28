@@ -42,6 +42,7 @@ smtp_sasl_auth_enable = yes
 #        [smtp.gmail.com]:587    USERNAME@gmail.com:PASSWORD
 # You have to make it yourself and change its permission with
 #       sudo chmod 400 /etc/postfix/sasl_passwd
+# and then create "/etc/postfix/sasl_passwd.db" using command
 #       sudo postmap /etc/postfix/sasl_passwd
 smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
 
