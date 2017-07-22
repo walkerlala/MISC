@@ -510,6 +510,10 @@ set completeopt-=preview
 " allow project specific .vimrc configuration
 set exrc
 
+" show vertical line at `colorcolumn'
+set colorcolumn=80
+highlight ColorColumn ctermbg=lightgrey guibg=lightgrey
+
 "switch between tags
 nnoremap <C-TAB> :tabnext<CR>
 
