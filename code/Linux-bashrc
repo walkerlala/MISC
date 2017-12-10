@@ -1,0 +1,338 @@
+# ~/.bashrc: executed by bash(1) for non-login shells.
+# see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
+# for examples
+
+# If not running interactively, don't do anything
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+
+# don't put duplicate lines or lines starting with space in the history.
+# See bash(1) for more options
+HISTCONTROL=ignoreboth
+
+# append to the history file, don't overwrite it
+shopt -s histappend
+
+# for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+HISTSIZE=10000
+HISTFILESIZE=20000
+
+# check the window size after each command and, if necessary,
+# update the values of LINES and COLUMNS.
+shopt -s checkwinsize
+
+# If set, the pattern "**" used in a pathname expansion context will
+# match all files and zero or more directories and subdirectories.
+#shopt -s globstar
+
+# make less more friendly for non-text input files, see lesspipe(1)
+[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+
+# set variable identifying the chroot you work in (used in the prompt below)
+if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
+fi
+
+# set a fancy prompt (non-color, unless we know we "want" color)
+case "$TERM" in
+    xterm-color) color_prompt=yes;;
+esac
+
+# uncomment for a colored prompt, if the terminal has the capability; turned
+# off by default to not distract the user: the focus in a terminal window
+# should be on the output of commands, not on the prompt
+
+force_color_prompt=yes
+
+if [ -n "$force_color_prompt" ]; then
+    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+	# We have color support; assume it's compliant with Ecma-48
+	# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+	# a case would tend to support setf rather than setaf.)
+	color_prompt=yes
+    else
+	color_prompt=
+    fi
+fi
+parse_git_branch() {
+    git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
+}
+if [ "$color_prompt" = yes ]; then
+   #the color output format is {ESC}[{attr};{bg};{256colors};{fg}m, where the 'ESC' is '033' or '\x1b'
+   PS1="${debian_chroot:+($debian_chroot)}\[\033[02;33m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w \[\033[01;36m\]\$(parse_git_branch)\[\033[00m\]\$ "
+else
+    PS1="${debian_chroot:+($debian_chroot)}\u@\h:\w \$(parse_git_branch)\$ "
+fi
+unset color_prompt force_color_prompt
+#PS2='>'     This $PS2 is the prompt after you hit \[ENTER]
+
+# If this is an xterm set the title to user@host:dir
+case "$TERM" in
+xterm*|rxvt*)
+    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+    ;;
+*)
+    ;;
+esac
+
+# enable color support of ls and also add handy aliases
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    #alias dir='dir --color=auto'
+    #alias vdir='vdir --color=auto'
+
+    #ignore case and automatically highlighted
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+# colored GCC warnings and errors
+#export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
+
+# some more ls aliases
+alias ll='ls --group-directories-first -ahlF' #maybe should add -h
+alias la='ls -A'
+alias l='ls -CF'
+
+# Add an "alert" alias for long running commands.  Use like so:
+#   sleep 10; alert
+alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+
+# Alias definitions.
+# You may want to put all your additions into a separate file like
+# ~/.bash_aliases, instead of adding them here directly.
+# See /usr/share/doc/bash-doc/examples in the bash-doc package.
+
+if [ -f ~/.bash_aliases ]; then
+    . ~/.bash_aliases
+fi
+
+# enable programmable completion features (you don't need to enable
+# this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+# sources /etc/bash.bashrc).
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+  fi
+fi
+
+
+#you have to install most first
+#export PAGER="most"
+#
+#   LESS   COLORS   FOR   MAN   PAGES
+#
+
+# CHANGE FIRST NUMBER PAIR FOR COMMAND AND FLAG COLOR
+# currently 0;33 a.k.a. brown, which is dark yellow for me 
+export LESS_TERMCAP_md=$'\E[0;33;5;74m'  # begin bold
+
+# CHANGE FIRST NUMBER PAIR FOR PARAMETER COLOR
+# currently 0;36 a.k.a. cyan
+export LESS_TERMCAP_us=$'\E[0;36;5;146m' # begin underline
+
+# don't change anything here
+export LESS_TERMCAP_mb=$'\E[1;31m'       # begin blinking
+export LESS_TERMCAP_me=$'\E[0m'           # end mode
+export LESS_TERMCAP_se=$'\E[0m'           # end standout-mode
+export LESS_TERMCAP_so=$'\E[38;5;246m'    # begin standout-mode - info box
+export LESS_TERMCAP_ue=$'\E[0m'           # end underline
+
+#########################################
+# Colorcodes:
+# Black       0;30     Dark Gray     1;30
+# Red         0;31     Light Red     1;31
+# Green       0;32     Light Green   1;32
+# Brown       0;33     Yellow        1;33
+# Blue        0;34     Light Blue    1;34
+# Purple      0;35     Light Purple  1;35
+# Cyan        0;36     Light Cyan    1;36
+# Light Gray  0;37     White         1;37
+#########################################
+export PAGER='less'
+
+# show only the last 3 directory names
+PROMPT_DIRTRIM=3
+
+alias cls='clear'
+alias :q='exit'
+alias cd..='cd ..'
+alias rm='rm -i'
+alias mv='mv -i'
+alias gh='history|grep'
+alias gl='ll|grep'
+alias glr='ll -R|grep'
+alias ppid='ps -o ppid= -p '
+alias ag='ag --ignore tags '
+
+### git alias
+alias gst='git status '
+alias gdf='git diff '
+alias gsh='git show '
+alias gad='git add '
+alias gcm='git commi '
+alias gbr='git branch '
+alias gco='git checkout '
+alias glg='git log '
+
+# mutt alias
+alias muttoffline='proxychains /usr/local/bin/mutt -F ~/.muttrc-offline 2> /dev/null '
+alias muttonline='proxychains /usr/local/bin/mutt -F ~/.muttrc 2> /dev/null '
+alias mutt="echo Please specify which mutt version\(muttoffline/muttonline\) you want to use"
+# thunderbird
+alias thunderbird='proxychains thunderbird > /dev/null 2> /dev/null &'
+
+# '--remote-silent' allow you to use one vim session
+# to editing multiple files
+#    gvim() {
+#        if [ $# -ne 0 ]; then
+#            /usr/bin/gvim --remote-silent "$@"
+#        else
+#            gvim .
+#        fi
+#    }
+alias gvim="gvim --remote-silent "
+alias g='gvim'
+#### see here why you have to quote $@
+# http://unix.stackexchange.com/questions/171346/security-implications-of-forgetting-to-quote-a-variable-in-bash-posix-shells
+####
+
+# for clang, use -ftrapv to help detect signed integer overflow
+alias clang++='color_compile clang++ -std=c++11 -fdiagnostics-show-template-tree'
+alias clang='color_compile clang -std=c99 -fdiagnostics-show-template-tree'
+
+# disable gcc extensions for c89
+#     -fno-common: not allow multiply-defined symbols
+#     -pedantic-errors: strict c89 aherency 
+alias gcc="color_compile gcc -fno-common"
+# always use c++11
+alias g++="color_compile g++ -fno-common -std=c++11"
+alias make="color_compile make"
+
+# so that you have history and can use arrow key(you may also try `rlwrap')
+alias sml='readline-editor sml'
+
+# IntelliJ IDEA and PyCharm alias
+alias itj='/home/walkerlala/software/idea-IC-145.597.3/bin/idea.sh nosplash > /dev/null 2> /dev/null &'
+alias pchm='/home/walkerlala/software/pycharm-community-2016.2.3/bin/pycharm.sh nosplash > /dev/null 2> /dev/null &'
+
+# yapf for python-code beautifier
+alias yapf='PYTHONPATH=/home/walkerlala/software/yapf python /home/walkerlala/software/yapf/yapf '
+
+# java configuration
+export JAVA_HOME='/home/walkerlala/software/jdk1.8.0_77'
+export JDK_HOME='/home/walkerlala/software/jdk1.8.0_77'
+export JRE_HOME='/home/walkerlala/software/jdk1.8.0_77/jre'
+export CLASSPATH=.:$CLASSPATH:$JDK_HOME/lib:$JRE_HOME/lib
+export PATH=$PATH:$JAVA_HOME/bin:$JRE_HOME/bin:$JDK_HOME
+
+# some utils
+export PATH='/home/walkerlala/software/somescripts':$PATH
+# color_compile
+export PATH=$PATH:/home/walkerlala/software/color-compile
+
+#maven path
+export PATH=$PATH:/home/walkerlala/software/apache-maven-3.3.9/bin
+
+#CodeViz's patched gcc-4.6.2 is put in ~/software/gcc-graph/bin
+#CodeViz's binary(check-stack.sh, genfull, gengraph)
+export PATH=$PATH:/home/walkerlala/software/codeviz-1.0.12/bin
+
+# patched version of gcc
+#export PATH=$PATH:/home/walkerlala/software/gcc-graph/bin
+
+#for nodejs
+export PATH=$PATH:/home/walkerlala/software/nodejs/bin
+alias cnpm="npm --registry=https://registry.npm.taobao.org \
+--cache=$HOME/.npm/.cache/cnpm \
+--disturl=https://npm.taobao.org/dist \
+--userconfig=$HOME/.cnpmrc"
+
+#for rust
+export PATH=$PATH:/home/walkerlala/software/rust/bin
+
+#sml path
+export PATH=$PATH:/home/walkerlala/software/SML/bin
+
+#for racket
+export PATH=$PATH:/home/walkerlala/software/racket/bin
+
+#for luajit
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+export LD_LIBRARY_PATH=/usr/local/lib
+export LIBRARY_PATH=/usr/local/lib
+export PATH=$PATH:/usr/local/lib
+
+export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:/home/walkerlala/project/boost_1_60_0/
+
+export TERM="xterm-256color"
+export EDITOR='vim'
+
+export PYTHONSTARTUP='/home/walkerlala/.pythonrc'
+
+export JAVA_HOME="/home/walkerlala/software/jdk1.8.0_77/"
+export CLASSPATH=".:/home/walkerlala/software/jdk1.8.0_77/lib/dt.jar:/home/walkerlala/software/jdk1.8.0_77/lib/tools.jar"
+
+export PATH="/home/walkerlala/software/EasyRSA:$PATH"
+
+export PATH="/home/walkerlala/software/gpg4usb:$PATH"
+
+export PATH="/home/walkerlala/software/bin:$PATH"
+
+export BLADE_AUTO_UPGRADE=no
+
+# test KM skynet
+#export LD_PRELOAD="/home/walkerlala/baidu/giano/gi/km-skynet/output/libskynethook.so:$LD_PRELOAD"
+
+##OpenGrok for code browsing
+#export OPENGROK_INSTANCE_BAS="/home/walkerlala/project/opengrok_local_src"
+#export PATH="/home/walkerlala/software/opengrok/bin:$PATH"
+#export SRC_ROOT="/home/walkerlala/project/opengrok_local_src/src/"
+
+#open tmux immediately
+#if command -V tmux > /dev/null; then   #if tmux exist
+                         # if we are not in tmux
+#    [[ ! $TERM =~ screen ]] && [[ -z $TMUX ]] && exec tmux
+#fi
+#now <shift> before you copy within tmux
+
+# pip bash completion start
+_pip_completion()
+{
+    COMPREPLY=( $( COMP_WORDS="${COMP_WORDS[*]}" \
+                   COMP_CWORD=$COMP_CWORD \
+                   PIP_AUTO_COMPLETE=1 $1 ) )
+}
+complete -o default -F _pip_completion pip
+# pip bash completion end
+
+# update independent repo
+update-repo() {
+    for source in "$@"; do
+        sudo apt-get update -o Dir::Etc::sourcelist="sources.list.d/${source}" \
+        -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"    
+    done
+}
+
+# Debian user-defined completion                             -*- shell-script -*-
+_ppa_lists(){
+    local cur
+    _init_completion || return
+
+    COMPREPLY=( $( find /etc/apt/sources.list.d/ -name "*$cur*.list" \
+-exec basename {} \; 2> /dev/null ) )
+    return 0
+} &&
+complete -F _ppa_lists update-repo
+
+# ActiveTcl installation
+export PATH="/home/walkerlala/software/ActiveTcl-8.5/bin:$PATH"
+
+export PATH="$PATH:$HOME/.rvm/bin" # Add RVM to PATH for scripting
+
