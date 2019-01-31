@@ -698,6 +698,8 @@ function! s:RunShellCommand(cmdline)
     1
 endfunction
 
+command! -range=% -nargs=1 SumColumn <line1>,<line2>!awk -F '|' '{print; sum+=$('<args>' + 1)} END {print "Total: "sum}'
+
 "read eval.txt for vim's expression 
 
 "================== end builtin configuration ======================
